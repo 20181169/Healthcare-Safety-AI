@@ -1,0 +1,23 @@
+# 공사현장 안전관리 (safety 앱) 파이프라인용.
+#
+# ⚠️  주의: basicsr 1.4.2 는 Python 3.12+ 에서 빌드가 실패합니다 (`KeyError: '__version__'`).
+#     아래 둘 중 하나를 선택하세요:
+#
+#     A) Python 3.10 또는 3.11 venv 를 사용하는 경우 — 이 파일을 그대로 설치하면 됩니다:
+#            pip install -r requirements-safety.txt
+#
+#     B) Python 3.12 이상에서 — basicsr 빌드 우회 (구버전 setuptools + 빌드 격리 비활성):
+#            pip install "setuptools<69" wheel
+#            pip install basicsr==1.4.2 --no-build-isolation
+#            pip install realesrgan==0.3.0 --no-deps
+#            pip install ultralytics opencv-python scikit-image albumentations
+#
+#     C) realesrgan / basicsr 를 쓰지 않을 거라면 — ultralytics 와 zero_dce 만 설치:
+#            pip install ultralytics scikit-image albumentations
+#        (safety 파이프라인이 SR 단계 없이 동작. settings 의 SR_CKPT 가 없으면 자동 우회됨)
+
+ultralytics>=8.0.0
+scikit-image>=0.19.0
+albumentations>=1.3.0
+basicsr==1.4.2
+realesrgan==0.3.0

@@ -1,0 +1,170 @@
+{% load static %}<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}통합 헬스케어·안전 AI 플랫폼{% endblock %}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ["Pretendard", "Inter", "system-ui", "sans-serif"] },
+      colors: {
+        brand: { 50:'#eef7ff',100:'#d9ecff',200:'#bcdcff',400:'#3a9cf0',500:'#1e88e5',600:'#1670c2',700:'#0f59a3' }
+      },
+      boxShadow: { soft: "0 1px 2px rgba(15,23,42,.04), 0 1px 1px rgba(15,23,42,.03)" }
+    }
+  }
+}
+</script>
+<style>
+  html, body { font-family: Pretendard, Inter, system-ui, sans-serif; }
+  /* 페이지 전환 시 작은 페이드 인 */
+  main { animation: fadeIn .18s ease-out; }
+  @keyframes fadeIn { from { opacity:.4; transform: translateY(2px);} to {opacity:1; transform:none;} }
+  /* form submit 시 표시되는 전역 로더 */
+  .ui-loader { position: fixed; inset: 0; background: rgba(15,23,42,.45); display: none;
+               align-items: center; justify-content: center; z-index: 100; }
+  .ui-loader.is-on { display: flex; }
+  .ui-loader .box { background: white; padding: 22px 28px; border-radius: 14px;
+                    box-shadow: 0 12px 32px rgba(15,23,42,.25); display:flex; align-items:center; gap:14px; }
+  .ui-loader .spinner { width: 22px; height: 22px; border: 3px solid #d9ecff; border-top-color: #1670c2;
+                        border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg);} }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+{% with active=request.resolver_match.namespace %}
+{% if user.is_authenticated %}
+<nav class="bg-white border-b border-slate-200 sticky top-0 z-30">
+  <div class="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
+    <div class="flex items-center gap-1">
+      <a href="{% url 'dashboard:home' %}" class="flex items-center gap-2 font-bold text-brand-700 pr-4">
+        <span class="inline-block w-8 h-8 bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-lg grid place-items-center font-bold shadow-soft">H</span>
+        <span class="hidden sm:inline">Healthcare<span class="text-slate-400 mx-1">·</span>Safety AI</span>
+      </a>
+
+      <a href="{% url 'dashboard:home' %}"
+         class="px-3 py-2 rounded-md text-sm font-medium transition
+                {% if active == 'dashboard' %}
+                  bg-brand-50 text-brand-700
+                {% else %}
+                  text-slate-600 hover:bg-slate-100 hover:text-slate-900
+                {% endif %}">
+        대시보드
+      </a>
+
+      {# 소아 X-ray (patients + studies + api) #}
+      <a href="{% url 'studies:list' %}"
+         class="px-3 py-2 rounded-md text-sm font-medium transition
+                {% if active == 'studies' or active == 'patients' or active == 'api' %}
+                  bg-brand-50 text-brand-700
+                {% else %}
+                  text-slate-600 hover:bg-slate-100 hover:text-slate-900
+                {% endif %}">
+        🩻 소아 X-ray
+      </a>
+
+      <a href="{% url 'diagnosis:upload' %}"
+         class="px-3 py-2 rounded-md text-sm font-medium transition
+                {% if active == 'diagnosis' %}
+                  bg-brand-50 text-brand-700
+                {% else %}
+                  text-slate-600 hover:bg-slate-100 hover:text-slate-900
+                {% endif %}">
+        🫁 심폐음
+      </a>
+
+      <a href="{% url 'safety:dashboard' %}"
+         class="px-3 py-2 rounded-md text-sm font-medium transition
+                {% if active == 'safety' %}
+                  bg-brand-50 text-brand-700
+                {% else %}
+                  text-slate-600 hover:bg-slate-100 hover:text-slate-900
+                {% endif %}">
+        🦺 현장 안전
+      </a>
+    </div>
+
+    <div class="flex items-center gap-3 text-sm">
+      {% if XRAY_DEMO_MODE %}
+        <span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded text-xs font-medium" title="소아 X-ray 가중치가 없어 데모 모드">DEMO</span>
+      {% else %}
+        <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-xs font-medium">AI 가동중</span>
+      {% endif %}
+      <div class="hidden md:flex items-center gap-2">
+        <span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px]">{{ user.role_kor }}</span>
+        <span class="font-medium">{{ user.name }}</span>
+      </div>
+      <a href="{% url 'accounts:logout' %}" class="text-slate-400 hover:text-rose-600" title="로그아웃">⎋</a>
+    </div>
+  </div>
+</nav>
+{% endif %}
+{% endwith %}
+
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6">
+
+{% if messages %}
+  <div class="space-y-2 mb-4">
+  {% for m in messages %}
+    <div class="px-4 py-2 rounded-lg text-sm border
+      {% if m.tags == 'success' %}bg-emerald-50 text-emerald-800 border-emerald-200
+      {% elif m.tags == 'danger' %}bg-rose-50 text-rose-800 border-rose-200
+      {% elif m.tags == 'warning' %}bg-amber-50 text-amber-800 border-amber-200
+      {% else %}bg-slate-100 text-slate-700 border-slate-200{% endif %}">
+      {{ m }}
+    </div>
+  {% endfor %}
+  </div>
+{% endif %}
+
+{% block content %}{% endblock %}
+
+</main>
+
+<footer class="border-t border-slate-200 bg-white mt-8">
+  <div class="max-w-7xl mx-auto px-4 py-4 text-xs text-slate-400 flex justify-between flex-wrap gap-2">
+    <span>© 통합 헬스케어·안전 AI 플랫폼 — 의료기기/안전관제 보조 시스템 (참고용)</span>
+    <span>소아 X-ray · 심폐음 SR+진단 · 현장 안전관리</span>
+  </div>
+</footer>
+
+<div class="ui-loader" data-ui-loader>
+  <div class="box">
+    <div class="spinner"></div>
+    <div>
+      <div class="font-medium text-slate-800" data-ui-loader-title>처리 중입니다…</div>
+      <div class="text-xs text-slate-500 mt-0.5" data-ui-loader-sub>AI 모델이 분석을 수행하고 있습니다.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // form 에 data-loader="..." 가 붙어 있으면 submit 시 전역 오버레이 표시
+  (function () {
+    const overlay = document.querySelector('[data-ui-loader]');
+    const titleEl = overlay?.querySelector('[data-ui-loader-title]');
+    const subEl = overlay?.querySelector('[data-ui-loader-sub]');
+    if (!overlay) return;
+    document.querySelectorAll('form[data-loader]').forEach(form => {
+      form.addEventListener('submit', (e) => {
+        // HTML5 native validity 검사를 통과한 경우에만 표시
+        if (form.checkValidity && !form.checkValidity()) return;
+        const [t, s] = (form.dataset.loader || '').split('|');
+        if (t && titleEl) titleEl.textContent = t;
+        if (s && subEl)  subEl.textContent = s;
+        overlay.classList.add('is-on');
+      });
+    });
+  })();
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

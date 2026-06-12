@@ -1,0 +1,112 @@
+{% extends "safety/base.html" %}
+{% block title %}이미지 분석{% endblock %}
+{% block safety_title %}이미지 분석{% endblock %}
+
+{% block safety_content %}
+<div class="grid lg:grid-cols-3 gap-4">
+  <!-- 폼 -->
+  <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-soft lg:col-span-2">
+    <h2 class="font-semibold text-slate-800 mb-1">현장 사진 업로드</h2>
+    <p class="text-sm text-slate-500 mb-5">
+      JPG/PNG 이미지를 올리면 안전모 착용 여부를 자동 판별합니다.
+      저조도일 때 Zero-DCE++, 저해상도일 때 Real-ESRGAN 이 자동 적용됩니다.
+    </p>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-4"
+          data-loader="현장 분석 중입니다…|YOLO 탐지 + ROI 분류 + 시각화에 수 초가 소요됩니다.">
+      {% csrf_token %}
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">
+          카메라 선택 <span class="text-slate-400 text-xs">(선택)</span>
+        </label>
+        {{ form.camera }}
+        <p class="text-xs text-slate-400 mt-1">현장 위치 추적에 사용됩니다. 비워두면 "업로드" 로 기록.</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">분석할 이미지</label>
+        <label for="{{ form.original_image.id_for_label }}"
+               class="block border-2 border-dashed border-slate-300 rounded-lg p-6 text-center cursor-pointer hover:border-brand-400 hover:bg-brand-50/40 transition">
+          <div class="text-3xl mb-1">📷</div>
+          <div class="text-sm text-slate-600">클릭해서 현장 사진을 선택하세요</div>
+          <div class="text-xs text-slate-400 mt-1">JPG · PNG · 최대 50MB</div>
+        </label>
+        <div class="mt-2 hidden text-xs text-slate-600" data-file-name></div>
+        {% if form.original_image.errors %}
+          <p class="text-xs text-rose-600 mt-1">{{ form.original_image.errors|join:", " }}</p>
+        {% endif %}
+      </div>
+
+      <label class="flex items-center gap-2 text-sm text-slate-700 select-none">
+        <input type="checkbox" name="anonymize" id="id_anonymize" checked
+               class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+        얼굴 비식별 처리(블러) — 결과 이미지에 개인정보 보호 자동 적용
+      </label>
+
+      <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+        <p class="text-xs text-slate-400">처음 한 번은 모델 로드로 5~15초 걸릴 수 있습니다.</p>
+        <div class="flex gap-2">
+          <a href="{% url 'safety:dashboard' %}"
+             class="inline-flex items-center gap-1 border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm">
+            취소
+          </a>
+          <button type="submit"
+                  class="inline-flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+            <span>▶</span> 분석 실행
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- 파이프라인 시각화 -->
+  <div class="bg-brand-50/40 border border-brand-100 rounded-xl p-5">
+    <div class="text-sm font-semibold text-brand-700 mb-3">처리 파이프라인</div>
+    <ol class="space-y-2 text-xs text-slate-600">
+      <li class="bg-white rounded-lg px-3 py-2 border border-slate-200">
+        <div class="font-medium text-slate-700">1. 이미지 품질 측정</div>
+        <div class="text-slate-400 mt-0.5">밝기 · 대비 · 노이즈</div>
+      </li>
+      <li class="bg-white rounded-lg px-3 py-2 border border-slate-200">
+        <div class="font-medium text-slate-700">2. Zero-DCE++ 보정</div>
+        <div class="text-slate-400 mt-0.5">저조도일 때만 조건부 적용</div>
+      </li>
+      <li class="bg-white rounded-lg px-3 py-2 border border-slate-200">
+        <div class="font-medium text-slate-700">3. YOLO 1차 탐지</div>
+        <div class="text-slate-400 mt-0.5">사람 · 머리 · 안전모</div>
+      </li>
+      <li class="bg-white rounded-lg px-3 py-2 border border-slate-200">
+        <div class="font-medium text-slate-700">4. Real-ESRGAN ROI 복원</div>
+        <div class="text-slate-400 mt-0.5">머리 영역이 흐릴 때 적용</div>
+      </li>
+      <li class="bg-white rounded-lg px-3 py-2 border border-slate-200">
+        <div class="font-medium text-slate-700">5. 머리 ROI 이중분류</div>
+        <div class="text-slate-400 mt-0.5">착용 여부 + 올바른 착용</div>
+      </li>
+      <li class="bg-white rounded-lg px-3 py-2 border border-slate-200">
+        <div class="font-medium text-slate-700">6. 융합 판정 + 얼굴 블러</div>
+        <div class="text-slate-400 mt-0.5">최종 박스 + 비식별</div>
+      </li>
+    </ol>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const input = document.querySelector('#{{ form.original_image.id_for_label }}');
+    const nameBox = document.querySelector('[data-file-name]');
+    if (!input || !nameBox) return;
+    input.classList.add('hidden');
+    input.addEventListener('change', () => {
+      const f = input.files && input.files[0];
+      if (f) {
+        nameBox.textContent = `선택됨: ${f.name} (${(f.size/1024/1024).toFixed(2)} MB)`;
+        nameBox.classList.remove('hidden');
+      } else {
+        nameBox.classList.add('hidden');
+      }
+    });
+  })();
+</script>
+{% endblock %}

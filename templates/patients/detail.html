@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ patient.name }} · 환자 상세{% endblock %}
+{% block content %}
+<div class="flex items-end justify-between mb-4">
+  <div>
+    <a href="{% url 'patients:list' %}" class="text-xs text-slate-500 hover:underline">← 환자 목록</a>
+    <h1 class="text-2xl font-bold">{{ patient.name }}
+      <span class="font-mono text-sm text-slate-500 ml-2">{{ patient.patient_code }}</span>
+    </h1>
+    <p class="text-sm text-slate-500">
+      {{ patient.get_sex_display|default:"-" }} / {{ patient.age_years|default_if_none:"-" }}세
+      {% if patient.guardian_phone %} · 보호자 {{ patient.guardian_phone }}{% endif %}
+    </p>
+  </div>
+  <a href="{% url 'studies:new' %}?patient_id={{ patient.pk }}"
+     class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+    + X-ray 검사 업로드
+  </a>
+</div>
+
+{% if patient.notes %}
+<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm mb-4">
+  <span class="text-xs text-slate-500">메모</span>
+  <p class="mt-1 whitespace-pre-wrap">{{ patient.notes }}</p>
+</div>
+{% endif %}
+
+<div class="bg-white border border-slate-200 rounded-xl p-5">
+  <h2 class="font-semibold mb-3">검사 이력 ({{ studies.count }}건)</h2>
+  {% if studies %}
+    <ul class="divide-y divide-slate-100">
+      {% for s in studies %}
+      <li class="py-3 flex items-center gap-4">
+        <a href="{% url 'studies:detail' pk=s.pk %}" class="shrink-0">
+          <img src="{{ s.image.url }}" class="w-16 h-16 rounded object-cover bg-slate-100">
+        </a>
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <a href="{% url 'studies:detail' pk=s.pk %}" class="font-medium text-brand-700 hover:underline">
+              검사 #{{ s.pk }}
+            </a>
+            <span class="px-1.5 py-0.5 rounded text-[10px] bg-{{ s.status_color }}-100 text-{{ s.status_color }}-700">{{ s.status_kor }}</span>
+          </div>
+          <div class="text-sm text-slate-500">
+            {{ s.captured_at|date:"Y-m-d H:i" }} · {{ s.location|default:"위치 미기재" }}
+          </div>
+          {% if s.diagnosis %}
+            <div class="text-xs mt-1">
+              최상위 의심: <span class="font-medium">{{ s.diagnosis.top_finding }}</span>
+              <span class="text-slate-400">({{ s.diagnosis.top_prob|floatformat:3 }})</span>
+            </div>
+          {% endif %}
+        </div>
+        <a href="{% url 'studies:report' pk=s.pk %}"
+           class="text-xs px-3 py-1.5 border border-slate-300 rounded hover:bg-slate-50">리포트</a>
+      </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-sm text-slate-400 py-8 text-center">검사 이력이 없습니다.</p>
+  {% endif %}
+</div>
+{% endblock %}

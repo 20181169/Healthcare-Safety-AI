@@ -1,0 +1,52 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Django local runtime files
+db.sqlite3
+*.sqlite3
+media/
+staticfiles/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# ML/data artifacts
+checkpoints/
+outputs/
+runs/
+weights/
+*.pt
+*.pth
+*.onnx
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,0 +1,123 @@
+{% extends "safety/base.html" %}
+{% block title %}이벤트 #{{ event.id }}{% endblock %}
+{% block safety_title %}분석 결과 <span class="text-slate-400 text-base font-mono">#{{ event.id }}</span>{% endblock %}
+
+{% block safety_content %}
+<!-- 상단 액션 -->
+<div class="flex justify-end gap-2 mb-4">
+  <a href="{% url 'safety:upload' %}"
+     class="inline-flex items-center gap-1 bg-brand-600 hover:bg-brand-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+    + 새 분석
+  </a>
+  <a href="{% url 'safety:history' %}"
+     class="inline-flex items-center gap-1 border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-sm">
+    이력
+  </a>
+</div>
+
+<!-- 통계 카드 -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
+    <div class="text-xs text-slate-500">탐지 객체</div>
+    <div class="text-2xl font-bold mt-1 text-slate-700">{{ event.n_total }}</div>
+  </div>
+  <div class="bg-white border {% if event.has_violation %}border-rose-300 bg-rose-50/40{% else %}border-slate-200{% endif %} rounded-xl p-4 shadow-soft">
+    <div class="text-xs {% if event.has_violation %}text-rose-600{% else %}text-slate-500{% endif %}">위반 수</div>
+    <div class="text-2xl font-bold mt-1 {% if event.has_violation %}text-rose-600{% else %}text-slate-700{% endif %}">
+      {{ event.n_violation }}
+    </div>
+  </div>
+  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
+    <div class="text-xs text-slate-500">평균 신뢰도</div>
+    <div class="text-2xl font-bold mt-1 text-slate-700 font-mono">{{ event.mean_conf|floatformat:3 }}</div>
+  </div>
+  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
+    <div class="text-xs text-slate-500">처리 시간</div>
+    <div class="text-2xl font-bold mt-1 text-slate-700 font-mono">
+      {{ event.elapsed_ms|floatformat:0 }}<span class="text-sm font-normal text-slate-400 ml-1">ms</span>
+    </div>
+  </div>
+</div>
+
+<!-- 적용된 모듈 배지 -->
+<div class="bg-white border border-slate-200 rounded-xl p-3 shadow-soft mb-4 flex flex-wrap items-center gap-2 text-xs">
+  <span class="px-2 py-0.5 rounded-full font-medium
+    {% if event.enhance_applied %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-500{% endif %}">
+    Zero-DCE++ {% if event.enhance_applied %}적용{% else %}미적용{% endif %}
+  </span>
+  <span class="px-2 py-0.5 rounded-full font-medium
+    {% if event.sr_applied_count %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-500{% endif %}">
+    Real-ESRGAN · {{ event.sr_applied_count }} ROI
+  </span>
+  <span class="px-2 py-0.5 rounded-full font-medium bg-brand-50 text-brand-700">
+    소스: {{ event.get_source_display }}
+  </span>
+  {% if event.camera %}
+    <span class="px-2 py-0.5 rounded-full font-medium bg-slate-100 text-slate-700">
+      📷 {{ event.camera.name }}
+    </span>
+  {% endif %}
+  <span class="ml-auto text-slate-400">{{ event.created_at|date:"Y-m-d H:i:s" }}</span>
+</div>
+
+<!-- 이미지 비교 -->
+<div class="grid md:grid-cols-2 gap-4 mb-4">
+  <div class="bg-white border border-slate-200 rounded-xl shadow-soft overflow-hidden">
+    <div class="px-4 py-2 border-b border-slate-100 text-sm font-medium text-slate-600">원본</div>
+    <img src="{{ event.original_image.url }}" class="w-full max-h-[480px] object-contain bg-slate-100">
+  </div>
+  <div class="bg-white border border-slate-200 rounded-xl shadow-soft overflow-hidden">
+    <div class="px-4 py-2 border-b border-slate-100 text-sm font-medium text-slate-600">탐지 결과</div>
+    {% if event.result_image %}
+      <img src="{{ event.result_image.url }}" class="w-full max-h-[480px] object-contain bg-slate-900">
+    {% else %}
+      <div class="text-center text-sm text-slate-400 py-16 bg-slate-50">결과 이미지가 없습니다.</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 객체별 결과 테이블 -->
+<div class="bg-white border border-slate-200 rounded-xl shadow-soft overflow-hidden">
+  <div class="px-5 py-3 border-b border-slate-100">
+    <h2 class="font-semibold text-slate-800">객체별 결과</h2>
+  </div>
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 text-xs text-slate-500">
+      <tr>
+        <th class="text-left px-5 py-2">#</th>
+        <th class="text-left">판정</th>
+        <th class="text-left">YOLO 클래스</th>
+        <th class="text-right">YOLO conf</th>
+        <th class="text-right">착용 P</th>
+        <th class="text-right">올바른 착용 P</th>
+        <th class="text-left pr-5">BBox</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for v in event.violations.all %}
+      <tr class="border-t border-slate-100 hover:bg-slate-50">
+        <td class="px-5 py-2.5 font-mono text-xs text-slate-500">{{ forloop.counter }}</td>
+        <td>
+          {% if v.decision == "OK" %}
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">정상</span>
+          {% elif v.decision == "NO_HELMET" %}
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-700">미착용</span>
+          {% else %}
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">잘못 착용</span>
+          {% endif %}
+        </td>
+        <td class="text-slate-600">{{ v.yolo_class }}</td>
+        <td class="text-right font-mono text-xs">{{ v.yolo_score|floatformat:3 }}</td>
+        <td class="text-right font-mono text-xs">{{ v.cls_presence|floatformat:3 }}</td>
+        <td class="text-right font-mono text-xs">{{ v.cls_correct|floatformat:3 }}</td>
+        <td class="text-xs text-slate-400 font-mono pr-5">
+          ({{ v.bbox_x1 }}, {{ v.bbox_y1 }}) → ({{ v.bbox_x2 }}, {{ v.bbox_y2 }})
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7" class="text-center text-sm text-slate-400 py-10">탐지된 객체가 없습니다.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

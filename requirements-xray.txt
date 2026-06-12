@@ -1,0 +1,7 @@
+# 소아 X-ray (studies 앱) 분류기 추론용.
+# torch / torchvision 은 GPU 환경에 맞춰 별도 index-url 로 먼저 설치하세요.
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+scikit-learn>=1.1.0
+pandas>=1.5.0
+matplotlib>=3.6.0
+tqdm>=4.64.0

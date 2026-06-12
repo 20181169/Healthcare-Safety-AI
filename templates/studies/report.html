@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}판독 리포트 #{{ study.pk }}{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white border border-slate-200 rounded-xl p-8 print:border-0 print:shadow-none">
+  <div class="flex justify-between items-start border-b pb-4 mb-6">
+    <div>
+      <div class="text-brand-700 font-bold text-lg">Pedia-Xray AI</div>
+      <div class="text-xs text-slate-500">소아 X-ray 원격 판독 보조 리포트</div>
+    </div>
+    <div class="text-right text-xs text-slate-500">
+      리포트 ID: R-{{ study.pk|stringformat:"06d" }}<br>
+      발행: {% if diagnosis and diagnosis.confirmed_at %}{{ diagnosis.confirmed_at|date:"Y-m-d H:i" }}{% else %}미확정{% endif %}
+    </div>
+  </div>
+
+  <table class="w-full text-sm mb-6">
+    <tr><td class="py-1 text-slate-500 w-32">환자명</td><td class="font-medium">{{ study.patient.name }}</td></tr>
+    <tr><td class="py-1 text-slate-500">환자코드</td><td class="font-mono">{{ study.patient.patient_code }}</td></tr>
+    <tr><td class="py-1 text-slate-500">성별/나이</td><td>{{ study.patient.get_sex_display|default:"-" }} / {{ study.patient.age_years|default_if_none:"-" }}세</td></tr>
+    <tr><td class="py-1 text-slate-500">촬영 일시</td><td>{{ study.captured_at|date:"Y-m-d H:i" }}</td></tr>
+    <tr><td class="py-1 text-slate-500">촬영 위치</td><td>{{ study.location|default:"-" }}</td></tr>
+    <tr><td class="py-1 text-slate-500">업로드</td><td>{{ study.uploader.name }} ({{ study.uploader.affiliation|default:study.uploader.role_kor }})</td></tr>
+    {% if study.clinical_note %}
+    <tr><td class="py-1 text-slate-500 align-top">임상 메모</td><td>{{ study.clinical_note }}</td></tr>
+    {% endif %}
+  </table>
+
+  <div class="grid grid-cols-2 gap-4 mb-6">
+    <div>
+      <div class="text-xs text-slate-500 mb-1">X-ray 영상</div>
+      <img src="{{ study.image.url }}" class="rounded border w-full">
+    </div>
+    {% if diagnosis and diagnosis.gradcam %}
+    <div>
+      <div class="text-xs text-slate-500 mb-1">Grad-CAM ({{ diagnosis.gradcam_class }})</div>
+      <img src="{{ diagnosis.gradcam.url }}" class="rounded border w-full">
+    </div>
+    {% endif %}
+  </div>
+
+  {% if diagnosis %}
+  <div class="mb-6">
+    <h2 class="font-semibold mb-2">AI 1차 판독 결과</h2>
+    <table class="w-full text-sm border-t border-slate-200">
+      <thead class="text-xs text-slate-500">
+        <tr><th class="text-left py-2">질환</th><th class="text-right">확률</th><th class="text-right pr-2">양성?</th></tr>
+      </thead>
+      <tbody>
+        {% for name, prob in diagnosis.ranked %}
+        <tr class="border-t border-slate-100">
+          <td class="py-1">{{ name }}</td>
+          <td class="text-right tabular-nums">{{ prob|floatformat:3 }}</td>
+          <td class="text-right pr-2">
+            {% if name in diagnosis.positive_findings %}
+              <span class="text-rose-600 font-medium">●</span>
+            {% else %}
+              <span class="text-slate-300">○</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="text-xs text-slate-500 mt-1">
+      추론 임계값 {{ diagnosis.threshold|floatformat:2 }} · 소요 {{ diagnosis.inference_ms }} ms
+      {% if diagnosis.is_demo %}· DEMO 추론 (학습 모델 미배포){% endif %}
+    </p>
+  </div>
+  {% endif %}
+
+  <div class="mb-6">
+    <h2 class="font-semibold mb-2">영상의학과 최종 판독</h2>
+    {% if study.status == 'confirmed' and diagnosis %}
+      <div class="border-l-4 border-emerald-500 pl-4">
+        <p class="text-sm">
+          <b>확정 소견:</b>
+          {% if diagnosis.final_findings %}{{ diagnosis.final_findings|join:", " }}{% else %}특이소견 없음{% endif %}
+        </p>
+        {% if diagnosis.severity %}
+        <p class="text-sm mt-1"><b>중증도:</b> {{ diagnosis.get_severity_display }}</p>
+        {% endif %}
+        {% if diagnosis.radiologist_note %}
+        <p class="text-sm mt-2 whitespace-pre-wrap"><b>코멘트</b><br>{{ diagnosis.radiologist_note }}</p>
+        {% endif %}
+        <p class="text-xs text-slate-500 mt-3">
+          판독의: {{ diagnosis.confirmed_by.name }} ({{ diagnosis.confirmed_by.affiliation|default:"영상의학과" }})
+          · 면허 {{ diagnosis.confirmed_by.license_no|default:"-" }}
+        </p>
+      </div>
+    {% else %}
+      <p class="text-sm text-slate-500 italic">아직 확정되지 않았습니다.</p>
+    {% endif %}
+  </div>
+
+  <p class="text-[11px] text-slate-400 border-t pt-3">
+    본 리포트는 의료진의 판독을 보조하는 AI 시스템의 출력 결과이며, 최종 진단은 반드시 면허를 가진 의료진의 판단을 따라야 합니다.
+  </p>
+
+  <div class="mt-6 flex justify-end gap-2 print:hidden">
+    <a href="{% url 'studies:detail' pk=study.pk %}" class="px-4 py-2 text-sm text-slate-600 hover:text-slate-900">← 상세로</a>
+    <button onclick="window.print()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium">🖨 인쇄 / PDF 저장</button>
+  </div>
+</div>
+{% endblock %}

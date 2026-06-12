@@ -1,0 +1,17 @@
+# ─────────────────────────────────────────────────────────────────
+# 코어 — Django 와 모든 앱이 import 단계에서 필요로 하는 최소 의존성.
+# 이것만 설치하면 일단 서버가 뜨고, 각 시스템별 ML 가중치는
+# 데모 모드로 동작한다. 무거운 ML 스택은 별도 파일로 분리.
+#
+#   requirements-xray.txt    : 소아 X-ray 분류기 추론 (torch/PIL)
+#   requirements-audio.txt   : 심폐음 SR + 분류 (torchaudio/librosa)
+#   requirements-safety.txt  : 공사현장 안전 (YOLO/RealESRGAN/Zero-DCE++)
+# ─────────────────────────────────────────────────────────────────
+Django>=4.2,<5.2
+
+# 모든 앱에서 두루 쓰이는 numpy/Pillow/OpenCV/요청 도우미
+numpy>=1.23.0
+Pillow>=9.2.0
+opencv-python>=4.6.0
+requests>=2.28.0
+python-dateutil>=2.8.0

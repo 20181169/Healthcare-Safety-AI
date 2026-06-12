@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}새 X-ray 업로드{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <h1 class="text-2xl font-bold mb-1">새 X-ray 검사 업로드</h1>
+  <p class="text-sm text-slate-500 mb-6">업로드 즉시 AI 가 1차 판독 보조 결과를 생성합니다.</p>
+
+  <form method="post" enctype="multipart/form-data" id="upload-form"
+        class="bg-white border border-slate-200 rounded-xl p-6 space-y-5 shadow-soft"
+        data-loader="X-ray AI 분석 중…|다중 라벨 분류 + Grad-CAM 생성에 1–3초가 소요됩니다.">
+    {% csrf_token %}
+
+    <div>
+      <label class="block text-sm font-medium mb-1">환자 *</label>
+      {% if patient %}
+        <input type="hidden" name="patient" value="{{ patient.pk }}">
+        <div class="border border-slate-300 rounded-lg px-3 py-2 bg-slate-50 flex items-center justify-between">
+          <span class="font-medium">{{ patient.name }}
+            <span class="font-mono text-xs text-slate-500 ml-2">{{ patient.patient_code }}</span>
+          </span>
+          <a href="{% url 'studies:new' %}" class="text-xs text-brand-600 hover:underline">변경</a>
+        </div>
+      {% else %}
+        {{ form.patient }}
+        {{ form.patient.errors }}
+        <p class="text-xs text-slate-500 mt-1">
+          등록되지 않은 환자라면 <a href="{% url 'patients:new' %}" class="text-brand-600 hover:underline">환자 등록</a>을 먼저 진행하세요.
+        </p>
+      {% endif %}
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="block text-sm font-medium mb-1">촬영 위치</label>
+        {{ form.location }}
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">임상 메모 (선택)</label>
+        {{ form.clinical_note }}
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">X-ray 영상 *</label>
+      <label id="drop-zone" for="image-input"
+             class="block border-2 border-dashed border-slate-300 rounded-xl p-8 text-center cursor-pointer hover:border-brand-400 hover:bg-brand-50/30 transition">
+        <div id="dz-empty">
+          <svg class="mx-auto w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.9 5 5 0 019.9-1A5.5 5.5 0 0118 16h-1m-4-4v8m0 0l-3-3m3 3l3-3"></path>
+          </svg>
+          <p class="mt-2 text-sm text-slate-600">파일을 드래그하거나 클릭해 선택하세요</p>
+          <p class="text-xs text-slate-400">PNG · JPG · JPEG · DCM (최대 50MB)</p>
+        </div>
+        <div id="dz-preview" class="hidden">
+          <img id="preview-img" class="mx-auto max-h-64 rounded shadow" alt="">
+          <p id="preview-name" class="text-xs text-slate-500 mt-2"></p>
+        </div>
+        {{ form.image }}
+      </label>
+      {{ form.image.errors }}
+    </div>
+
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
+      ⓘ 업로드 후 자동으로 14개 흉부 질환에 대한 확률과 Top-1 Grad-CAM 이 생성됩니다.
+      결과 확인까지 보통 1~3초 소요됩니다.
+    </div>
+
+    <div class="flex justify-end gap-2">
+      <a href="{% url 'dashboard:home' %}" class="px-4 py-2 text-sm text-slate-600 hover:text-slate-900">취소</a>
+      <button id="submit-btn" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-medium">
+        업로드 후 AI 분석
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/upload.js' %}"></script>
+{% endblock %}

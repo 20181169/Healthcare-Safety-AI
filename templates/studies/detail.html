@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block title %}검사 #{{ study.pk }} · {{ study.patient.name }}{% endblock %}
+{% block content %}
+
+<div class="flex items-end justify-between mb-4">
+  <div>
+    <a href="{% url 'patients:detail' pk=study.patient.pk %}" class="text-xs text-slate-500 hover:underline">
+      ← {{ study.patient.name }} 의 검사 이력
+    </a>
+    <h1 class="text-2xl font-bold flex items-center gap-3">
+      검사 #{{ study.pk }}
+      <span class="px-2 py-0.5 rounded text-xs bg-{{ study.status_color }}-100 text-{{ study.status_color }}-700">{{ study.status_kor }}</span>
+      {% if diagnosis and diagnosis.is_demo %}
+        <span class="px-2 py-0.5 rounded text-xs bg-amber-100 text-amber-700">DEMO 추론</span>
+      {% endif %}
+    </h1>
+    <p class="text-sm text-slate-500">
+      {{ study.captured_at|date:"Y-m-d H:i" }} · {{ study.location|default:"위치 미기재" }}
+      · 업로드: {{ study.uploader.name }} ({{ study.uploader.role_kor }})
+    </p>
+  </div>
+  <div class="flex gap-2">
+    {% if user.is_radiologist and study.status == 'ai_analyzed' %}
+      <form method="post" action="{% url 'studies:claim' pk=study.pk %}">
+        {% csrf_token %}
+        <button class="border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded text-sm">
+          내가 검토 시작
+        </button>
+      </form>
+    {% endif %}
+    <a href="{% url 'studies:report' pk=study.pk %}"
+       class="border border-slate-300 hover:bg-slate-50 px-3 py-1.5 rounded text-sm">📄 리포트</a>
+  </div>
+</div>
+
+{% if study.clinical_note %}
+<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm mb-4">
+  <span class="text-xs text-slate-500">임상 메모</span>
+  <p class="mt-1">{{ study.clinical_note }}</p>
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+  <div class="bg-white border border-slate-200 rounded-xl p-4">
+    <div class="flex items-center justify-between mb-2">
+      <h2 class="font-semibold">X-ray 영상</h2>
+      <div class="flex gap-1 text-xs bg-slate-100 rounded p-0.5">
+        <button data-view="original" class="view-tab px-2 py-1 rounded bg-white shadow-sm">원본</button>
+        <button data-view="overlay" class="view-tab px-2 py-1 rounded">Grad-CAM</button>
+      </div>
+    </div>
+    <div class="aspect-square bg-black rounded-lg overflow-hidden relative">
+      <img id="img-original" src="{{ study.image.url }}"
+           class="w-full h-full object-contain" alt="X-ray">
+      {% if diagnosis and diagnosis.gradcam %}
+        <img id="img-overlay" src="{{ diagnosis.gradcam.url }}"
+             class="hidden absolute inset-0 w-full h-full object-contain" alt="Grad-CAM">
+      {% endif %}
+    </div>
+
+    {% if diagnosis %}
+      <form method="post" action="{% url 'studies:rerun_cam' pk=study.pk %}"
+            class="mt-3 flex items-center gap-2 text-sm">
+        {% csrf_token %}
+        <span class="text-slate-500">Grad-CAM 대상:</span>
+        <select name="class" class="flex-1 border border-slate-300 rounded px-2 py-1 text-sm">
+          {% for lbl in labels %}
+            <option value="{{ lbl }}" {% if lbl == diagnosis.gradcam_class %}selected{% endif %}>{{ lbl }}</option>
+          {% endfor %}
+        </select>
+        <button class="px-3 py-1 bg-slate-700 text-white rounded text-sm hover:bg-slate-900">재생성</button>
+      </form>
+    {% endif %}
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-xl p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-semibold">AI 판독 보조 결과</h2>
+      {% if diagnosis %}
+        <span class="text-xs text-slate-500">{{ diagnosis.inference_ms }} ms · 임계값 {{ diagnosis.threshold|floatformat:2 }}</span>
+      {% endif %}
+    </div>
+
+    {% if not AI_DEMO_MODE %}
+    <div class="mb-3 p-2 rounded bg-blue-50 border border-blue-200 text-xs text-blue-800">
+      ⓘ 현재 모델은 <b>Pneumonia 1개 라벨만 감독 학습</b>되었습니다 (Kermany 데이터셋).
+      나머지 라벨은 추론 시 0 으로 마스킹되어 표시됩니다 — 의학적 판단에 사용하지 마세요.
+    </div>
+    {% endif %}
+
+    {% if diagnosis %}
+      <ul class="space-y-1.5 max-h-[420px] overflow-y-auto pr-1">
+        {% for name, prob in diagnosis.ranked %}
+          {% if name in diagnosis.positive_findings %}
+            <li class="flex items-center gap-3">
+              <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+              <span class="w-44 text-sm font-semibold">{{ name }}</span>
+              <div class="flex-1 h-2 bg-slate-100 rounded">
+                <div class="h-2 rounded bg-rose-500" style="width: {% widthratio prob 1 100 %}%"></div>
+              </div>
+              <span class="w-14 text-right text-xs text-slate-500 tabular-nums">{{ prob|floatformat:3 }}</span>
+            </li>
+          {% else %}
+            <li class="flex items-center gap-3">
+              <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+              <span class="w-44 text-sm">{{ name }}</span>
+              <div class="flex-1 h-2 bg-slate-100 rounded">
+                <div class="h-2 rounded bg-brand-400" style="width: {% widthratio prob 1 100 %}%"></div>
+              </div>
+              <span class="w-14 text-right text-xs text-slate-500 tabular-nums">{{ prob|floatformat:3 }}</span>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+
+      {% if diagnosis.positive_findings %}
+        <div class="mt-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-sm">
+          <span class="font-semibold text-rose-700">⚠ 양성 의심 소견:</span>
+          {{ diagnosis.positive_findings|join:", " }}
+        </div>
+      {% else %}
+        <div class="mt-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-sm text-emerald-800">
+          ✓ 임계값 이상 양성 소견 없음 (임상 판단 우선)
+        </div>
+      {% endif %}
+    {% else %}
+      <p class="text-sm text-slate-400 py-10 text-center">AI 분석 결과가 아직 없습니다.</p>
+    {% endif %}
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-xl p-4 lg:col-span-2">
+    <h2 class="font-semibold mb-3">영상의학과 최종 판독</h2>
+
+    {% if study.status == 'confirmed' and diagnosis %}
+      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+        <div class="flex justify-between text-sm mb-2">
+          <span><b>{{ diagnosis.confirmed_by.name }}</b> 전문의 확정
+            <span class="text-slate-500">· {{ diagnosis.confirmed_at|date:"Y-m-d H:i" }}</span>
+          </span>
+          {% if diagnosis.severity %}
+            <span class="px-2 py-0.5 bg-white border border-emerald-300 text-emerald-700 rounded text-xs">
+              중증도: {{ diagnosis.get_severity_display }}
+            </span>
+          {% endif %}
+        </div>
+        <p class="text-sm"><b>확정 소견:</b>
+          {% if diagnosis.final_findings %}{{ diagnosis.final_findings|join:", " }}{% else %}없음{% endif %}
+        </p>
+        {% if diagnosis.radiologist_note %}
+          <p class="text-sm mt-2 whitespace-pre-wrap"><b>코멘트:</b><br>{{ diagnosis.radiologist_note }}</p>
+        {% endif %}
+      </div>
+    {% elif user.is_radiologist and diagnosis %}
+      <form method="post" action="{% url 'studies:confirm' pk=study.pk %}" class="space-y-4">
+        {% csrf_token %}
+        <div>
+          <label class="block text-sm font-medium mb-1">최종 채택 질환 (다중 선택)</label>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {% for lbl in labels %}
+              <label class="flex items-center gap-2 text-sm border border-slate-200 rounded px-2 py-1">
+                <input type="checkbox" name="final_findings" value="{{ lbl }}"
+                       {% if lbl in diagnosis.positive_findings %}checked{% endif %}>
+                <span>{{ lbl }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-sm font-medium mb-1">중증도</label>
+            <select name="severity" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+              <option value="">선택</option>
+              <option value="mild">경증</option>
+              <option value="moderate">중등도</option>
+              <option value="severe">중증</option>
+              <option value="critical">위중</option>
+            </select>
+          </div>
+          <div class="col-span-2"></div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">전문의 코멘트</label>
+          <textarea name="radiologist_note" rows="4"
+                    placeholder="추가 권고사항, 후속 검사, 응급실 이송 권고 등"
+                    class="w-full border border-slate-300 rounded-lg px-3 py-2"></textarea>
+        </div>
+        <div class="flex justify-end">
+          <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg text-sm font-medium">
+            ✓ 판독 확정 및 송부
+          </button>
+        </div>
+      </form>
+    {% else %}
+      <p class="text-sm text-slate-500">
+        영상의학과 전문의의 확정을 기다리고 있습니다.
+        {% if not user.is_radiologist %}<br><span class="text-xs">(현재 계정은 확정 권한이 없습니다)</span>{% endif %}
+      </p>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.view-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.view-tab').forEach(b => b.classList.remove('bg-white','shadow-sm'));
+    btn.classList.add('bg-white','shadow-sm');
+    const overlay = document.getElementById('img-overlay');
+    if (!overlay) return;
+    if (btn.dataset.view === 'overlay') overlay.classList.remove('hidden');
+    else overlay.classList.add('hidden');
+  });
+});
+</script>
+{% endblock %}

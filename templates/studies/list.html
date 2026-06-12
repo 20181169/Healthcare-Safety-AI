@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}검사 목록{% endblock %}
+{% block content %}
+
+<div class="mb-5">
+  <div class="flex items-end justify-between flex-wrap gap-3">
+    <div>
+      <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+        <span>소아 X-ray</span>
+        <span>·</span>
+        <span>Pediatric Radiology</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900">X-ray 검사 목록</h1>
+      <p class="text-sm text-slate-500 mt-1">상태별로 필터링하고 전문의 확정까지의 워크플로우를 추적합니다.</p>
+    </div>
+    <div class="flex gap-2">
+      <a href="{% url 'patients:list' %}"
+         class="inline-flex items-center gap-1 border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-sm">
+        환자 목록
+      </a>
+      <a href="{% url 'studies:new' %}"
+         class="inline-flex items-center gap-1 bg-brand-600 hover:bg-brand-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+        + 새 업로드
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="flex gap-2 mb-4 text-sm">
+  <a href="{% url 'studies:list' %}"
+     class="px-3 py-1 rounded-full border {% if not status %}bg-brand-600 text-white border-brand-600{% else %}bg-white border-slate-300 text-slate-600 hover:bg-slate-50{% endif %}">전체</a>
+  <a href="{% url 'studies:list' %}?status=ai_analyzed"
+     class="px-3 py-1 rounded-full border {% if status == 'ai_analyzed' %}bg-brand-600 text-white border-brand-600{% else %}bg-white border-slate-300 text-slate-600 hover:bg-slate-50{% endif %}">AI 분석 완료</a>
+  <a href="{% url 'studies:list' %}?status=under_review"
+     class="px-3 py-1 rounded-full border {% if status == 'under_review' %}bg-brand-600 text-white border-brand-600{% else %}bg-white border-slate-300 text-slate-600 hover:bg-slate-50{% endif %}">검토 중</a>
+  <a href="{% url 'studies:list' %}?status=confirmed"
+     class="px-3 py-1 rounded-full border {% if status == 'confirmed' %}bg-brand-600 text-white border-brand-600{% else %}bg-white border-slate-300 text-slate-600 hover:bg-slate-50{% endif %}">확정</a>
+  <a href="{% url 'studies:list' %}?status=archived"
+     class="px-3 py-1 rounded-full border {% if status == 'archived' %}bg-brand-600 text-white border-brand-600{% else %}bg-white border-slate-300 text-slate-600 hover:bg-slate-50{% endif %}">보관</a>
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 text-xs text-slate-500">
+      <tr>
+        <th class="text-left px-4 py-2">#</th>
+        <th class="text-left">환자</th>
+        <th class="text-left">촬영시각</th>
+        <th class="text-left">위치</th>
+        <th class="text-left">최상위 의심</th>
+        <th class="text-left">상태</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for s in studies %}
+      <tr class="border-t hover:bg-slate-50">
+        <td class="px-4 py-2 font-mono text-xs">#{{ s.pk }}</td>
+        <td><a href="{% url 'patients:detail' pk=s.patient.pk %}" class="text-brand-600 hover:underline">{{ s.patient.name }}</a></td>
+        <td class="text-xs text-slate-500">{{ s.captured_at|date:"Y-m-d H:i" }}</td>
+        <td class="text-xs">{{ s.location|default:"-" }}</td>
+        <td>
+          {% if s.diagnosis %}
+            {{ s.diagnosis.top_finding }}
+            <span class="text-slate-400 text-xs">{{ s.diagnosis.top_prob|floatformat:3 }}</span>
+          {% else %}-{% endif %}
+        </td>
+        <td><span class="px-2 py-0.5 rounded text-xs bg-{{ s.status_color }}-100 text-{{ s.status_color }}-700">{{ s.status_kor }}</span></td>
+        <td class="text-right pr-4">
+          <a href="{% url 'studies:detail' pk=s.pk %}" class="text-brand-600 hover:underline text-sm">상세 →</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7" class="text-center text-slate-400 py-10">검사가 없습니다.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

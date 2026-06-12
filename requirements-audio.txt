@@ -1,0 +1,7 @@
+# 심폐음 SR + 분류 (diagnosis 앱) 추론용.
+# torchaudio 는 torch 와 버전 매칭이 필요 — torch 와 같은 index-url 로 설치하세요.
+#   pip install torchaudio --index-url https://download.pytorch.org/whl/cu128
+librosa>=0.9.2
+soundfile>=0.10.3
+scipy>=1.8.0
+PyYAML>=6.0

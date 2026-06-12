@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}심폐음 진단{% endblock %}
+
+{% block content %}
+<div class="mb-5">
+  <div class="flex items-end justify-between flex-wrap gap-3">
+    <div>
+      <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+        <span>심폐음 SR + 진단</span>
+        <span>·</span>
+        <span>Heart &amp; Lung Sound AI</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900">
+        {% block diagnosis_title %}측정 업로드{% endblock %}
+      </h1>
+      <p class="text-sm text-slate-500 mt-1">
+        가정용 청진기 측정본을 Audio Super-Resolution 으로 복원한 뒤 정상/Crackle/Wheeze/혼합 4개 클래스로 분류.
+      </p>
+    </div>
+    <nav class="flex gap-1 text-sm bg-white border border-slate-200 rounded-lg p-1 shadow-soft">
+      {% url 'diagnosis:upload' as u_upload %}
+      <a href="{{ u_upload }}"
+         class="px-3 py-1.5 rounded-md transition
+                {% if request.path == u_upload %}bg-brand-600 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+        측정 업로드
+      </a>
+      {% url 'diagnosis:history' as u_history %}
+      <a href="{{ u_history }}"
+         class="px-3 py-1.5 rounded-md transition
+                {% if request.path == u_history %}bg-brand-600 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+        진단 이력
+      </a>
+    </nav>
+  </div>
+</div>
+
+{% block diagnosis_content %}{% endblock %}
+{% endblock %}

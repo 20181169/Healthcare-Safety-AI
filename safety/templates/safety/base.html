@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}현장 안전관리{% endblock %}
+
+{% block content %}
+<div class="mb-5">
+  <div class="flex items-end justify-between flex-wrap gap-3">
+    <div>
+      <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+        <span>공사현장 안전관리</span>
+        <span>·</span>
+        <span>SafeSite AI Pipeline</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900">
+        {% block safety_title %}안전 대시보드{% endblock %}
+      </h1>
+      <p class="text-sm text-slate-500 mt-1">
+        YOLO + Zero-DCE++ + Real-ESRGAN 결합 파이프라인 — 안전모 미착용/오착용 자동 탐지.
+      </p>
+    </div>
+    <nav class="flex gap-1 text-sm bg-white border border-slate-200 rounded-lg p-1 shadow-soft">
+      {% url 'safety:dashboard' as u_dash %}
+      {% url 'safety:upload' as u_upload %}
+      {% url 'safety:live' as u_live %}
+      {% url 'safety:history' as u_hist %}
+      <a href="{{ u_dash }}"
+         class="px-3 py-1.5 rounded-md transition
+                {% if request.path == u_dash %}bg-brand-600 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+        대시보드
+      </a>
+      <a href="{{ u_upload }}"
+         class="px-3 py-1.5 rounded-md transition
+                {% if request.path == u_upload %}bg-brand-600 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+        이미지 분석
+      </a>
+      <a href="{{ u_live }}"
+         class="px-3 py-1.5 rounded-md transition
+                {% if request.path == u_live %}bg-brand-600 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+        실시간
+      </a>
+      <a href="{{ u_hist }}"
+         class="px-3 py-1.5 rounded-md transition
+                {% if request.path == u_hist %}bg-brand-600 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+        이력
+      </a>
+    </nav>
+  </div>
+</div>
+
+{% block safety_content %}{% endblock %}
+{% endblock %}

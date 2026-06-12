@@ -1,0 +1,68 @@
+{% extends "diagnosis/base.html" %}
+
+{% block title %}진단 이력 · 심폐음 진단{% endblock %}
+{% block diagnosis_title %}진단 이력{% endblock %}
+
+{% block diagnosis_content %}
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-soft">
+  {% if recordings %}
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-xs text-slate-500">
+        <tr>
+          <th class="text-left px-4 py-2.5">#</th>
+          <th class="text-left">이름 / 식별자</th>
+          <th class="text-left">부위</th>
+          <th class="text-left">진단</th>
+          <th class="text-right">신뢰도</th>
+          <th class="text-right">입력 SNR</th>
+          <th class="text-right">복원 SNR</th>
+          <th class="text-left">업로드</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for r in recordings %}
+        <tr class="border-t border-slate-100 hover:bg-slate-50 transition">
+          <td class="px-4 py-2.5 font-mono text-xs text-slate-500">#{{ r.pk }}</td>
+          <td class="font-medium">{{ r.patient_name|default:"무명" }}</td>
+          <td class="text-slate-600">{{ r.get_body_part_display }}</td>
+          <td>
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium
+              {% if r.predicted_label == 'normal' %}bg-emerald-100 text-emerald-700
+              {% elif r.predicted_label == 'crackle' %}bg-amber-100 text-amber-700
+              {% elif r.predicted_label == 'wheeze' %}bg-rose-100 text-rose-700
+              {% elif r.predicted_label == 'both' %}bg-rose-200 text-rose-800
+              {% else %}bg-slate-100 text-slate-500{% endif %}">
+              {{ r.label_kor }}
+            </span>
+          </td>
+          <td class="text-right font-mono text-xs text-slate-600">
+            {% if r.confidence %}{{ r.confidence|floatformat:3 }}{% else %}—{% endif %}
+          </td>
+          <td class="text-right font-mono text-xs text-slate-500">
+            {{ r.snr_in_db|default_if_none:"—"|floatformat:2 }}
+          </td>
+          <td class="text-right font-mono text-xs text-brand-600">
+            {{ r.snr_out_db|default_if_none:"—"|floatformat:2 }}
+          </td>
+          <td class="text-xs text-slate-500">{{ r.uploaded_at|date:"Y-m-d H:i" }}</td>
+          <td class="text-right pr-4">
+            <a href="{% url 'diagnosis:result' r.pk %}"
+               class="text-brand-600 hover:underline text-sm">상세 →</a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="text-center py-14">
+      <div class="text-4xl mb-2">🎙️</div>
+      <p class="text-sm text-slate-500 mb-3">아직 등록된 측정본이 없습니다.</p>
+      <a href="{% url 'diagnosis:upload' %}"
+         class="inline-flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+        + 첫 측정 업로드
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

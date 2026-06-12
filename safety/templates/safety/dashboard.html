@@ -1,0 +1,136 @@
+{% extends "safety/base.html" %}
+{% block title %}안전 대시보드{% endblock %}
+{% block safety_title %}안전 대시보드{% endblock %}
+
+{% block safety_content %}
+<!-- 통계 카드 -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
+    <div class="text-xs text-slate-500">오늘 분석 건수</div>
+    <div class="text-2xl font-bold mt-1 text-slate-700">{{ cards.events_today }}</div>
+  </div>
+  <div class="bg-white border-l-4 border-rose-400 border border-slate-200 rounded-xl p-4 shadow-soft">
+    <div class="text-xs text-rose-500">오늘 위반 건수</div>
+    <div class="text-2xl font-bold mt-1 text-rose-600">{{ cards.violations_today }}</div>
+  </div>
+  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
+    <div class="text-xs text-slate-500">최근 7일 평균 신뢰도</div>
+    <div class="text-2xl font-bold mt-1 text-slate-700 font-mono">
+      {{ cards.mean_conf_week|floatformat:3 }}
+    </div>
+  </div>
+  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
+    <div class="text-xs text-slate-500">운영 중 카메라</div>
+    <div class="text-2xl font-bold mt-1 text-emerald-600">
+      {{ cards.active_cameras }}
+      <span class="text-sm font-normal text-slate-400">대</span>
+    </div>
+  </div>
+</div>
+
+<!-- 빠른 작업 -->
+<div class="flex flex-wrap gap-2 mb-5">
+  <a href="{% url 'safety:upload' %}"
+     class="inline-flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+    📷 이미지 분석
+  </a>
+  <a href="{% url 'safety:live' %}"
+     class="inline-flex items-center gap-1.5 border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm">
+    📡 실시간 보기
+  </a>
+  <a href="{% url 'safety:history' %}"
+     class="inline-flex items-center gap-1.5 border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm">
+    🗂 이력 조회
+  </a>
+  <a href="/admin/safety/camera/add/"
+     class="inline-flex items-center gap-1.5 border border-slate-300 hover:bg-slate-100 text-slate-500 px-4 py-2 rounded-lg text-sm ml-auto">
+    + 카메라 등록
+  </a>
+</div>
+
+<div class="grid lg:grid-cols-5 gap-4">
+  <!-- 카메라별 오늘 현황 -->
+  <div class="bg-white border border-slate-200 rounded-xl shadow-soft lg:col-span-3 overflow-hidden">
+    <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+      <h2 class="font-semibold text-slate-800">카메라별 오늘 현황</h2>
+      <a href="{% url 'safety:live' %}" class="text-xs text-brand-600 hover:underline">실시간 보기 →</a>
+    </div>
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-xs text-slate-500">
+        <tr>
+          <th class="text-left px-5 py-2">카메라</th>
+          <th class="text-left">위치</th>
+          <th class="text-right">분석</th>
+          <th class="text-right">위반</th>
+          <th class="text-left pr-5">상태</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for s in cam_stats %}
+        <tr class="border-t border-slate-100 hover:bg-slate-50 transition">
+          <td class="px-5 py-2.5 font-medium">{{ s.camera.name }}</td>
+          <td class="text-slate-500">{{ s.camera.location|default:"—" }}</td>
+          <td class="text-right font-mono text-slate-700">{{ s.events }}</td>
+          <td class="text-right">
+            {% if s.violations %}
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-700">
+                {{ s.violations }}
+              </span>
+            {% else %}
+              <span class="text-slate-400 font-mono text-xs">0</span>
+            {% endif %}
+          </td>
+          <td class="pr-5">
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">운영</span>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="text-center text-sm text-slate-400 py-10">
+          등록된 카메라가 없습니다.
+          <a href="/admin/safety/camera/add/" class="text-brand-600 hover:underline">관리자 페이지</a>에서 추가하세요.
+        </td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 최근 위반 -->
+  <div class="bg-white border border-slate-200 rounded-xl shadow-soft lg:col-span-2 overflow-hidden">
+    <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+      <h2 class="font-semibold text-slate-800">최근 위반 이력</h2>
+      <a href="{% url 'safety:history' %}" class="text-xs text-brand-600 hover:underline">전체 →</a>
+    </div>
+
+    {% if recent_violations %}
+      <ul class="divide-y divide-slate-100">
+      {% for v in recent_violations %}
+        <li class="px-5 py-3 hover:bg-slate-50 transition">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                  {% if v.decision == 'NO_HELMET' %}bg-rose-100 text-rose-700
+                  {% else %}bg-amber-100 text-amber-700{% endif %}">
+                  {{ v.get_decision_display }}
+                </span>
+                <span class="text-sm text-slate-600 truncate">
+                  {{ v.event.camera.name|default:"업로드" }}
+                </span>
+              </div>
+              <div class="text-xs text-slate-400 mt-1">
+                {{ v.yolo_class }} · conf {{ v.yolo_score|floatformat:2 }} ·
+                {{ v.created_at|date:"m-d H:i" }}
+              </div>
+            </div>
+            <a href="{% url 'safety:event_detail' v.event.id %}"
+               class="text-xs text-brand-600 hover:underline whitespace-nowrap">상세 →</a>
+          </div>
+        </li>
+      {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-center text-sm text-slate-400 py-10">최근 위반이 없습니다.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

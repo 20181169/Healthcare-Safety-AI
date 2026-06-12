@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block title %}대시보드 · 통합 헬스케어·안전 AI{% endblock %}
+{% block content %}
+
+<div class="mb-6">
+  <div class="flex items-end justify-between flex-wrap gap-3">
+    <div>
+      <div class="text-xs text-slate-500 mb-1">{{ user.role_kor }} · {{ user.affiliation|default:"통합 워크스페이스" }}</div>
+      <h1 class="text-2xl font-bold text-slate-900">
+        안녕하세요, {{ user.name }}<span class="text-slate-400 font-normal">님</span>
+      </h1>
+      <p class="text-sm text-slate-500 mt-1">최근 7일간의 통합 활동 요약입니다.</p>
+    </div>
+    <a href="{% url 'studies:new' %}"
+       class="inline-flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-soft">
+      + 새 X-ray 업로드
+    </a>
+  </div>
+</div>
+
+<!-- 3개 시스템 진입 카드 -->
+<div class="grid md:grid-cols-3 gap-3 mb-8">
+  <a href="{% url 'studies:list' %}"
+     class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between hover:border-brand-400 hover:shadow-md transition group shadow-soft">
+    <div>
+      <div class="text-xs text-slate-500">소아 X-ray 원격 판독</div>
+      <div class="font-semibold text-slate-800 mt-0.5">환자·검사 워크플로우</div>
+      <div class="text-xs text-slate-400 mt-2">
+        검사 {{ stats.studies_total }} · 환자 {{ stats.patients_total }}
+      </div>
+    </div>
+    <span class="text-4xl group-hover:scale-110 transition-transform">🩻</span>
+  </a>
+  <a href="{% url 'diagnosis:upload' %}"
+     class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between hover:border-brand-400 hover:shadow-md transition group shadow-soft">
+    <div>
+      <div class="text-xs text-slate-500">심폐음 SR + 진단</div>
+      <div class="font-semibold text-slate-800 mt-0.5">측정본 업로드</div>
+      <div class="text-xs text-slate-400 mt-2">Audio Super-Resolution</div>
+    </div>
+    <span class="text-4xl group-hover:scale-110 transition-transform">🫁</span>
+  </a>
+  <a href="{% url 'safety:dashboard' %}"
+     class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between hover:border-brand-400 hover:shadow-md transition group shadow-soft">
+    <div>
+      <div class="text-xs text-slate-500">공사현장 안전관리</div>
+      <div class="font-semibold text-slate-800 mt-0.5">실시간/이미지 탐지</div>
+      <div class="text-xs text-slate-400 mt-2">YOLO + Zero-DCE + Real-ESRGAN</div>
+    </div>
+    <span class="text-4xl group-hover:scale-110 transition-transform">🦺</span>
+  </a>
+</div>
+
+<!-- X-ray 핵심 지표 -->
+<div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
+    <div class="text-xs text-slate-500">전체 환자</div>
+    <div class="text-2xl font-bold mt-1 text-slate-700">{{ stats.patients_total }}</div>
+  </div>
+  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
+    <div class="text-xs text-slate-500">전체 검사</div>
+    <div class="text-2xl font-bold mt-1 text-slate-700">{{ stats.studies_total }}</div>
+  </div>
+  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
+    <div class="text-xs text-slate-500">최근 7일 검사</div>
+    <div class="text-2xl font-bold mt-1 text-brand-600">{{ stats.studies_7d }}</div>
+  </div>
+  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
+    <div class="text-xs text-slate-500">전문의 검토 대기</div>
+    <div class="text-2xl font-bold mt-1 text-amber-600">{{ stats.pending_review }}</div>
+  </div>
+  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
+    <div class="text-xs text-slate-500">7일내 확정</div>
+    <div class="text-2xl font-bold mt-1 text-emerald-600">{{ stats.confirmed_7d }}</div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+  <!-- 검토 대기열 -->
+  <div class="bg-white border border-slate-200 rounded-xl shadow-soft lg:col-span-2 overflow-hidden">
+    <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+      <h2 class="font-semibold text-slate-800">전문의 검토 대기열</h2>
+      <a href="{% url 'studies:list' %}?status=ai_analyzed" class="text-xs text-brand-600 hover:underline">전체 →</a>
+    </div>
+    {% if review_queue %}
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-xs text-slate-500">
+          <tr>
+            <th class="text-left px-5 py-2">환자</th>
+            <th class="text-left">최상위 의심</th>
+            <th class="text-left">상태</th>
+            <th class="text-left pr-5">촬영시각</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for s in review_queue %}
+          <tr class="border-t border-slate-100 hover:bg-slate-50 transition">
+            <td class="px-5 py-2.5">
+              <a href="{% url 'studies:detail' pk=s.pk %}" class="text-brand-600 hover:underline font-medium">
+                {{ s.patient.name }}
+              </a>
+              <div class="text-xs text-slate-400 font-mono">{{ s.patient.patient_code }}</div>
+            </td>
+            <td>
+              {% if s.diagnosis %}
+                <span class="font-medium">{{ s.diagnosis.top_finding }}</span>
+                <span class="text-slate-400 text-xs ml-1">{{ s.diagnosis.top_prob|floatformat:3 }}</span>
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-{{ s.status_color }}-100 text-{{ s.status_color }}-700">
+                {{ s.status_kor }}
+              </span>
+            </td>
+            <td class="text-xs text-slate-500 pr-5">{{ s.captured_at|date:"Y-m-d H:i" }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="text-center py-12">
+        <div class="text-3xl mb-1">✅</div>
+        <p class="text-sm text-slate-400">대기 중인 검사가 없습니다.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- 최근 30일 양성 소견 분포 -->
+  <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-soft">
+    <h2 class="font-semibold text-slate-800 mb-3">최근 30일 양성 소견</h2>
+    {% if finding_counts %}
+      {% with max_count=finding_counts.0.1 %}
+      <ul class="space-y-2">
+        {% for name, cnt in finding_counts %}
+        <li>
+          <div class="flex justify-between text-xs mb-1">
+            <span class="text-slate-700">{{ name }}</span>
+            <span class="text-slate-500 font-mono">{{ cnt }}건</span>
+          </div>
+          <div class="h-2 bg-slate-100 rounded">
+            <div class="h-2 bg-brand-500 rounded transition-all" style="width: {% widthratio cnt max_count 100 %}%"></div>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endwith %}
+    {% else %}
+      <p class="text-sm text-slate-400 text-center py-10">데이터 없음</p>
+    {% endif %}
+  </div>
+
+  <!-- 내가 업로드한 최근 검사 -->
+  <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-soft lg:col-span-3">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-semibold text-slate-800">내가 업로드한 최근 검사</h2>
+      <a href="{% url 'studies:list' %}" class="text-xs text-brand-600 hover:underline">전체 →</a>
+    </div>
+    {% if my_studies %}
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {% for s in my_studies %}
+          <a href="{% url 'studies:detail' pk=s.pk %}"
+             class="border border-slate-200 rounded-lg p-3 hover:border-brand-400 hover:shadow-soft transition">
+            <div class="aspect-square bg-slate-100 rounded-md mb-2 overflow-hidden">
+              <img src="{{ s.image.url }}" class="w-full h-full object-cover" alt="">
+            </div>
+            <div class="text-sm font-medium truncate">{{ s.patient.name }}</div>
+            <div class="text-xs text-slate-500">{{ s.captured_at|date:"m-d H:i" }}</div>
+            <div class="mt-1">
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-{{ s.status_color }}-100 text-{{ s.status_color }}-700">
+                {{ s.status_kor }}
+              </span>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center py-12">
+        <div class="text-3xl mb-1">📸</div>
+        <p class="text-sm text-slate-400 mb-3">아직 업로드한 검사가 없습니다.</p>
+        <a href="{% url 'studies:new' %}"
+           class="inline-flex items-center gap-1 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+          + 첫 X-ray 업로드
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

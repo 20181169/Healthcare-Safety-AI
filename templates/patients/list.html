@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}환자 목록{% endblock %}
+{% block content %}
+
+<div class="mb-5">
+  <div class="flex items-end justify-between flex-wrap gap-3">
+    <div>
+      <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+        <span>소아 X-ray</span>
+        <span>·</span>
+        <span>Pediatric Radiology</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900">환자 목록</h1>
+      <p class="text-sm text-slate-500 mt-1">
+        환자 마스터를 등록하면 곧바로 X-ray 검사를 업로드할 수 있습니다.
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <a href="{% url 'studies:list' %}"
+         class="inline-flex items-center gap-1 border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-sm">
+        검사 목록
+      </a>
+      <a href="{% url 'patients:new' %}"
+         class="inline-flex items-center gap-1 bg-brand-600 hover:bg-brand-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+        + 환자 등록
+      </a>
+    </div>
+  </div>
+</div>
+
+<form method="get" class="mb-4">
+  <div class="relative max-w-md">
+    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+    <input name="q" value="{{ q }}" placeholder="이름 또는 환자코드로 검색"
+           class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 focus:outline-none transition">
+  </div>
+</form>
+
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-soft">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 text-xs text-slate-500">
+      <tr>
+        <th class="text-left px-4 py-2.5">환자코드</th>
+        <th class="text-left">이름</th>
+        <th class="text-left">성별/나이</th>
+        <th class="text-right">검사 수</th>
+        <th class="text-left">보호자 연락처</th>
+        <th class="text-left">등록일</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for p in patients %}
+      <tr class="border-t border-slate-100 hover:bg-slate-50 transition">
+        <td class="px-4 py-2.5 font-mono text-xs text-slate-500">{{ p.patient_code }}</td>
+        <td class="font-medium text-slate-800">{{ p.name }}</td>
+        <td class="text-slate-600">
+          {{ p.get_sex_display|default:"—" }}
+          {% if p.age_years %}· {{ p.age_years }}세{% endif %}
+        </td>
+        <td class="text-right font-mono text-slate-700">{{ p.studies.count }}</td>
+        <td class="text-xs text-slate-500">{{ p.guardian_phone|default:"—" }}</td>
+        <td class="text-xs text-slate-500">{{ p.created_at|date:"Y-m-d H:i" }}</td>
+        <td class="text-right pr-4">
+          <a href="{% url 'patients:detail' pk=p.pk %}" class="text-brand-600 hover:underline text-sm">상세 →</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7" class="text-center py-12">
+        <div class="text-3xl mb-1">👶</div>
+        <p class="text-sm text-slate-400 mb-3">
+          {% if q %}'{{ q }}' 검색 결과가 없습니다.{% else %}등록된 환자가 없습니다.{% endif %}
+        </p>
+        <a href="{% url 'patients:new' %}"
+           class="inline-flex items-center gap-1 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+          + 첫 환자 등록
+        </a>
+      </td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

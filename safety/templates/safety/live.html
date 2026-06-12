@@ -1,0 +1,126 @@
+{% extends "safety/base.html" %}
+{% block title %}실시간 모니터링{% endblock %}
+{% block safety_title %}실시간 모니터링{% endblock %}
+
+{% block safety_content %}
+{% if cameras %}
+<!-- 컨트롤 패널 -->
+<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft mb-4">
+  <div class="grid md:grid-cols-3 gap-4 text-sm">
+    <div>
+      <div class="text-xs font-medium text-slate-500 mb-2">재생 속도</div>
+      <div class="inline-flex bg-slate-100 rounded-lg p-0.5" role="group">
+        <button type="button" class="px-3 py-1.5 rounded-md text-xs speed-btn font-medium transition" data-skip="1">1x</button>
+        <button type="button" class="px-3 py-1.5 rounded-md text-xs speed-btn font-medium transition is-active" data-skip="3">3x</button>
+        <button type="button" class="px-3 py-1.5 rounded-md text-xs speed-btn font-medium transition" data-skip="5">5x</button>
+        <button type="button" class="px-3 py-1.5 rounded-md text-xs speed-btn font-medium transition" data-skip="10">10x</button>
+      </div>
+    </div>
+    <div>
+      <div class="text-xs font-medium text-slate-500 mb-2">추론 모드</div>
+      <div class="inline-flex bg-slate-100 rounded-lg p-0.5" role="group">
+        <button type="button" class="px-3 py-1.5 rounded-md text-xs mode-btn font-medium transition is-active"
+                data-mode="bg" title="영상은 부드럽고 박스만 백그라운드 추론(약간 지연)">백그라운드</button>
+        <button type="button" class="px-3 py-1.5 rounded-md text-xs mode-btn font-medium transition"
+                data-mode="sync" title="매 프레임 즉시 추론 — 박스가 영상과 정확히 동기화(느림)">동기</button>
+        <button type="button" class="px-3 py-1.5 rounded-md text-xs mode-btn font-medium transition"
+                data-mode="off" title="추론 끔 — 원본만 송출(가장 빠름)">끔</button>
+      </div>
+    </div>
+    <div>
+      <div class="text-xs font-medium text-slate-500 mb-2">얼굴 블러</div>
+      <div class="inline-flex bg-slate-100 rounded-lg p-0.5" role="group">
+        <button type="button" class="px-3 py-1.5 rounded-md text-xs anon-btn font-medium transition is-active" data-anon="1">ON</button>
+        <button type="button" class="px-3 py-1.5 rounded-md text-xs anon-btn font-medium transition" data-anon="0">OFF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 카메라 그리드 -->
+<div class="grid lg:grid-cols-2 gap-4">
+{% for cam in cameras %}
+  <div class="bg-white border border-slate-200 rounded-xl shadow-soft overflow-hidden">
+    <div class="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between">
+      <div>
+        <span class="font-medium text-slate-800">{{ cam.name }}</span>
+        <span class="text-xs text-slate-500 ml-2">{{ cam.location }}</span>
+      </div>
+      <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> LIVE
+      </span>
+    </div>
+    <div class="bg-slate-900 aspect-video">
+      <img src="{% url 'safety:live_stream' cam.id %}?skip=3"
+           alt="{{ cam.name }} live stream"
+           data-base-url="{% url 'safety:live_stream' cam.id %}"
+           class="w-full h-full object-contain live-frame">
+    </div>
+    <div class="px-4 py-2 text-xs text-slate-400 font-mono break-all">{{ cam.stream_url }}</div>
+  </div>
+{% endfor %}
+</div>
+
+<div class="mt-4 text-xs text-slate-500 bg-slate-100 rounded-lg px-4 py-3">
+  실시간 스트림은 MJPEG 으로 송출. 각 프레임이 파이프라인을 거쳐 안전모 판정 + 얼굴 비식별 처리 후 표시됩니다.
+  백그라운드 모드에서는 추론 스레드가 박스만 갱신하고 박스 TTL(0.8초) 이 지나면 자동 제거.
+</div>
+
+<style>
+  .speed-btn, .mode-btn, .anon-btn { color: #64748b; }
+  .speed-btn.is-active { background: #1670c2; color: white; }
+  .mode-btn.is-active, .anon-btn.is-active { background: #059669; color: white; }
+</style>
+
+<script>
+  (function () {
+    const imgs = document.querySelectorAll('.live-frame');
+    const state = { skip: 3, mode: 'bg', anon: 1 };
+
+    function refresh() {
+      imgs.forEach(img => {
+        const base = img.dataset.baseUrl;
+        const q = `skip=${state.skip}&mode=${state.mode}&anonymize=${state.anon}&t=${Date.now()}`;
+        img.src = `${base}?${q}`;
+      });
+    }
+
+    function bind(selector, key, attr) {
+      const btns = document.querySelectorAll(selector);
+      btns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          btns.forEach(b => b.classList.remove('is-active'));
+          btn.classList.add('is-active');
+          state[key] = btn.dataset[attr];
+          refresh();
+        });
+      });
+    }
+    bind('.speed-btn', 'skip', 'skip');
+    bind('.mode-btn',  'mode', 'mode');
+    bind('.anon-btn',  'anon', 'anon');
+  })();
+</script>
+
+{% else %}
+<!-- 빈 상태 -->
+<div class="bg-white border border-slate-200 rounded-xl p-10 shadow-soft text-center">
+  <div class="text-5xl mb-3">📡</div>
+  <h2 class="font-semibold text-slate-800 mb-1">등록된 카메라가 없습니다</h2>
+  <p class="text-sm text-slate-500 mb-4">관리자 페이지에서 카메라를 추가하면 실시간 스트림이 표시됩니다.</p>
+  <a href="/admin/safety/camera/add/"
+     class="inline-flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+    + 카메라 등록
+  </a>
+
+  <div class="mt-6 bg-slate-50 border border-slate-200 rounded-lg p-4 text-left text-xs max-w-md mx-auto">
+    <div class="font-medium text-slate-700 mb-2">stream_url 예시</div>
+    <ul class="space-y-1 text-slate-600 font-mono">
+      <li><span class="text-brand-700">0</span> — 로컬 웹캠</li>
+      <li><span class="text-brand-700">rtsp://...</span> — IP/현장 카메라</li>
+      <li><span class="text-brand-700">http://...mjpg</span> — 웹 스트림</li>
+    </ul>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
