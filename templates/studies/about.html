@@ -91,43 +91,43 @@
 
   <!-- 3-1. 사용 데이터셋 -->
   <div class="mb-5">
-    <div class="text-sm font-medium text-slate-700 mb-2">📂 사용 데이터셋</div>
+    <div class="text-sm font-medium text-slate-700 mb-2">📂 사용 데이터셋 (실측 기반)</div>
     <ul class="text-sm text-slate-600 space-y-1.5">
-      <li>• <b>Kermany Pediatric Chest X-ray</b> — 5,856 이미지 (Normal · Pneumonia[Bacterial/Viral])</li>
-      <li>• 대회 제공 소아 X-ray 데이터셋 — 라벨 보완 + 영아 sample 추가</li>
-      <li>• CheXpert 14-label 구조 — 서비스 확장용 (추론 시 supervised 1개만 활성)</li>
+      <li>• <b>Kermany Pediatric Chest X-ray</b> — 5,856 이미지 · 광저우 여성·아동의료센터 1~5세 소아</li>
+      <li>• 폴더 구조: <code>train/{NORMAL, PNEUMONIA}</code>, 파일명에 <code>bacteria</code>/<code>virus</code> 표기 보존</li>
+      <li>• Binary task (NORMAL vs PNEUMONIA) — 본 챌린지는 "소아 폐렴 보조 판독" 으로 좁힘</li>
+      <li>• 모델 architecture 는 14-label multi-label DenseNet 으로 설계 (확장 호환) — Pneumonia channel 만 supervised 학습</li>
     </ul>
   </div>
 
-  <!-- 3-2. 클래스 분포 차트 -->
+  <!-- 3-2. 클래스 분포 차트 (Kermany train 실측) -->
   <div class="mb-5">
-    <div class="text-sm font-medium text-slate-700 mb-3">📊 라벨 분포 (Kermany train split)</div>
+    <div class="text-sm font-medium text-slate-700 mb-3">📊 Kermany train 분포 (실측)</div>
     <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2.5">
       <div class="flex items-center gap-3 text-xs">
-        <span class="w-32 font-medium text-rose-700">Pneumonia · Bacterial</span>
+        <span class="w-32 font-medium text-rose-700">PNEUMONIA · Bacterial</span>
         <div class="flex-1 bg-white rounded h-5 border border-slate-200 overflow-hidden">
-          <div class="h-5 bg-rose-500 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 47%">47.0%</div>
+          <div class="h-5 bg-rose-500 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 48.5%">48.5%</div>
         </div>
-        <span class="w-12 text-right font-mono text-slate-600">2,538</span>
+        <span class="w-12 text-right font-mono text-slate-600">2,530</span>
       </div>
       <div class="flex items-center gap-3 text-xs">
-        <span class="w-32 font-medium text-rose-600">Pneumonia · Viral</span>
+        <span class="w-32 font-medium text-rose-600">PNEUMONIA · Viral</span>
         <div class="flex-1 bg-white rounded h-5 border border-slate-200 overflow-hidden">
-          <div class="h-5 bg-rose-400 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 26%">26.0%</div>
+          <div class="h-5 bg-rose-400 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 25.8%">25.8%</div>
         </div>
-        <span class="w-12 text-right font-mono text-slate-600">1,407</span>
+        <span class="w-12 text-right font-mono text-slate-600">1,345</span>
       </div>
       <div class="flex items-center gap-3 text-xs">
-        <span class="w-32 font-medium text-emerald-700">Normal</span>
+        <span class="w-32 font-medium text-emerald-700">NORMAL</span>
         <div class="flex-1 bg-white rounded h-5 border border-slate-200 overflow-hidden">
-          <div class="h-5 bg-emerald-500 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 27%">27.0%</div>
+          <div class="h-5 bg-emerald-500 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 25.7%">25.7%</div>
         </div>
-        <span class="w-12 text-right font-mono text-slate-600">1,583</span>
+        <span class="w-12 text-right font-mono text-slate-600">1,341</span>
       </div>
       <div class="text-[11px] text-slate-500 pt-2 border-t border-slate-200 mt-2">
-        🚨 <b>발견:</b> Pneumonia 73% : Normal 27% 의 강한 imbalance. naïve 학습 시
-        <b>모든 input 을 Pneumonia 로 예측해도 73% accuracy</b> — accuracy 지표 함정.
-        대응: <b>BCE pos_weight = 0.37 (=27/73)</b> · AUROC · F1 으로 평가 지표 통일.
+        🚨 <b>발견:</b> Binary 관점에서 PNEUMONIA 74.3% : NORMAL 25.7%. <b>모두 PNEUMONIA 로 예측해도 74% accuracy</b> 라는 majority predictor 함정.
+        대응: <b>AUROC + Sensitivity/Specificity</b> 로 평가 지표 통일. Bacterial/Viral 세부 라벨은 본 모델에서 분리하지 않음 (binary task).
       </div>
     </div>
   </div>
@@ -209,98 +209,121 @@
         </thead>
         <tbody class="divide-y divide-slate-100">
           <tr>
-            <td class="px-3 py-2.5 align-top">Pneumonia 73% : Normal 27% imbalance</td>
-            <td class="px-3 py-2.5 align-top">BCE with pos_weight 0.37 · accuracy 대신 AUROC/F1 평가</td>
-            <td class="px-3 py-2.5 align-top text-emerald-700">naïve majority predictor (73% acc) 함정 회피 · F1 +0.028</td>
+            <td class="px-3 py-2.5 align-top">PNEUMONIA 74.3% : NORMAL 25.7% imbalance <span class="text-emerald-600 text-[10px]">(실측)</span></td>
+            <td class="px-3 py-2.5 align-top">AUROC + Sensitivity/Specificity 로 평가지표 통일 · accuracy 의존 회피</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">실측 AUROC 0.9818 · Sensitivity 0.9949 — majority predictor(74% acc) 함정 회피</td>
           </tr>
           <tr>
-            <td class="px-3 py-2.5 align-top">이미지 사이즈 400~2000 px 편차 5×</td>
-            <td class="px-3 py-2.5 align-top">224×224 center-crop · 3-channel 복제 후 ImageNet normalize</td>
-            <td class="px-3 py-2.5 align-top text-emerald-700">DenseNet pretrained 활용 → 학습 epoch 50 → 20 단축</td>
+            <td class="px-3 py-2.5 align-top">이미지 한 변 평균 ~1100px (편차 큼)</td>
+            <td class="px-3 py-2.5 align-top">224×224 resize · 1ch → 3ch 복제 → ImageNet normalize</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">DenseNet-121 pretrained 활용 · 실측 latency 59ms/장 (CPU)</td>
           </tr>
           <tr>
-            <td class="px-3 py-2.5 align-top">영아(≤1세) 비율 최대 + 흉선 음영 빈출</td>
-            <td class="px-3 py-2.5 align-top">영아 sample weight ×1.5 · Grad-CAM 검증 의무화</td>
-            <td class="px-3 py-2.5 align-top text-emerald-700">영아 false positive 19% → 11%</td>
+            <td class="px-3 py-2.5 align-top">소아 데이터(1~5세) — 흉선 음영이 폐렴과 혼동될 위험</td>
+            <td class="px-3 py-2.5 align-top">Grad-CAM 시각화 의무화 — 의료진이 모델 attention 영역 직접 검증</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">실측 FN 단 2건 — 폐렴 놓침 위험 99.5% 차단</td>
           </tr>
           <tr>
-            <td class="px-3 py-2.5 align-top">14-label 중 Pneumonia 만 supervised 신호</td>
-            <td class="px-3 py-2.5 align-top">추론 시 13 라벨 0-mask · 학습 라벨도 Pneumonia 만 사용</td>
-            <td class="px-3 py-2.5 align-top text-emerald-700">의학적 신뢰성 — false positive 라벨 미표시</td>
+            <td class="px-3 py-2.5 align-top">소아 데이터셋 한정 — 라벨은 NORMAL/PNEUMONIA 만 존재</td>
+            <td class="px-3 py-2.5 align-top">14-label DenseNet 구조는 유지 (확장 호환) · Pneumonia channel 만 supervised</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">의학적 신뢰성 — 학습 신호 없는 라벨은 0 마스킹</td>
           </tr>
           <tr>
-            <td class="px-3 py-2.5 align-top">강한 augmentation (회전 ±30°, contrast) 시 학습 불안정</td>
-            <td class="px-3 py-2.5 align-top">flip + 작은 회전(±5°) 만 적용 · contrast/brightness 변환 제외</td>
-            <td class="px-3 py-2.5 align-top text-emerald-700">의료 영상 인공 음영 회피 — AUROC -0.018 회피</td>
+            <td class="px-3 py-2.5 align-top">실측 FP 45건 (NORMAL 234건 중 19%)</td>
+            <td class="px-3 py-2.5 align-top">워크플로우 단계에서 영상의학과 확정으로 흡수 — AI 단독 판정 금지</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">임상 안전성 ≫ 모델 specificity — 응급실 즉시 1차 조치만 보조</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- 3-5. Ablation -->
+  <!-- 3-5. 실측 결과 (Kermany test 624장) -->
   <div>
-    <div class="text-sm font-medium text-slate-700 mb-2">🧪 Ablation — 데이터 의사결정의 정량 효과</div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-xs border border-slate-200 rounded-lg overflow-hidden">
-        <thead class="bg-slate-100 text-slate-600">
-          <tr>
-            <th class="text-left px-3 py-2">변경점</th>
-            <th class="text-right px-3 py-2">AUROC</th>
-            <th class="text-right px-3 py-2">F1</th>
-            <th class="text-right px-3 py-2">Sensitivity</th>
-            <th class="text-left px-3 py-2">결론</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100">
-          <tr>
-            <td class="px-3 py-2 text-slate-600">Baseline · ResNet-50 + CE</td>
-            <td class="text-right font-mono">0.911</td>
-            <td class="text-right font-mono">0.864</td>
-            <td class="text-right font-mono">0.83</td>
-            <td class="px-3 py-2 text-slate-500">기준</td>
-          </tr>
-          <tr>
-            <td class="px-3 py-2 text-slate-600">+ DenseNet-121 backbone</td>
-            <td class="text-right font-mono">0.928</td>
-            <td class="text-right font-mono">0.876</td>
-            <td class="text-right font-mono">0.86</td>
-            <td class="px-3 py-2 text-emerald-600">feature reuse ↑</td>
-          </tr>
-          <tr>
-            <td class="px-3 py-2 text-slate-600">+ Multi-label BCE + pos_weight</td>
-            <td class="text-right font-mono">0.934</td>
-            <td class="text-right font-mono">0.884</td>
-            <td class="text-right font-mono">0.89</td>
-            <td class="px-3 py-2 text-emerald-600">minority sensitivity ↑</td>
-          </tr>
-          <tr>
-            <td class="px-3 py-2 text-slate-600">+ 영아 sample weight ×1.5</td>
-            <td class="text-right font-mono">0.940</td>
-            <td class="text-right font-mono">0.889</td>
-            <td class="text-right font-mono">0.90</td>
-            <td class="px-3 py-2 text-emerald-600">흉선 confusion ↓</td>
-          </tr>
-          <tr>
-            <td class="px-3 py-2 text-slate-600">+ Heavy aug (회전±30°, contrast)</td>
-            <td class="text-right font-mono text-rose-600">0.922</td>
-            <td class="text-right font-mono text-rose-600">0.871</td>
-            <td class="text-right font-mono">0.87</td>
-            <td class="px-3 py-2 text-rose-600">⚠ 인공 음영 학습 ↓</td>
-          </tr>
-          <tr class="bg-emerald-50/40">
-            <td class="px-3 py-2.5 font-semibold text-emerald-800">+ Light aug (flip + ±5°) ★</td>
-            <td class="text-right font-mono font-bold text-emerald-700">0.943</td>
-            <td class="text-right font-mono font-bold text-emerald-700">0.892</td>
-            <td class="text-right font-mono font-bold text-emerald-700">0.91</td>
-            <td class="px-3 py-2.5 text-emerald-700 font-medium">대회 제출 모델</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+      <div class="text-sm font-medium text-slate-700">🧪 실측 결과 — Kermany test split</div>
+      <span class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">측정값</span>
     </div>
-    <p class="text-[11px] text-slate-400 mt-2">
-      Heavy aug 시도가 오히려 성능을 떨어뜨린 행은 <b>"의료 영상에는 자연 이미지 일반 상식이 통하지 않는다"</b>
-      는 도메인 지식을 데이터 분석으로 검증한 핵심 의사결정. 일반 Vision 컴퍼티션 노하우와의 분기점.
+
+    <div class="grid md:grid-cols-2 gap-3">
+      <!-- 핵심 지표 -->
+      <div class="bg-emerald-50/40 border border-emerald-200 rounded-lg p-4">
+        <div class="text-xs font-medium text-emerald-700 mb-3">핵심 지표 (이진 분류)</div>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="bg-white rounded p-2.5 border border-emerald-100">
+            <div class="text-[10px] text-slate-500">AUROC</div>
+            <div class="text-xl font-bold text-emerald-700 font-mono">0.9818</div>
+          </div>
+          <div class="bg-white rounded p-2.5 border border-emerald-100">
+            <div class="text-[10px] text-slate-500">Average Precision</div>
+            <div class="text-xl font-bold text-emerald-700 font-mono">0.9866</div>
+          </div>
+          <div class="bg-white rounded p-2.5 border border-emerald-100">
+            <div class="text-[10px] text-slate-500">F1 @ 0.5</div>
+            <div class="text-xl font-bold text-slate-700 font-mono">0.9429</div>
+          </div>
+          <div class="bg-white rounded p-2.5 border border-emerald-100">
+            <div class="text-[10px] text-slate-500">Precision</div>
+            <div class="text-xl font-bold text-slate-700 font-mono">0.8961</div>
+          </div>
+          <div class="bg-white rounded p-2.5 border border-emerald-100">
+            <div class="text-[10px] text-emerald-600 font-medium">Sensitivity ★</div>
+            <div class="text-xl font-bold text-emerald-700 font-mono">0.9949</div>
+            <div class="text-[10px] text-slate-400">폐렴 recall</div>
+          </div>
+          <div class="bg-white rounded p-2.5 border border-emerald-100">
+            <div class="text-[10px] text-slate-500">Specificity</div>
+            <div class="text-xl font-bold text-slate-700 font-mono">0.8077</div>
+            <div class="text-[10px] text-slate-400">정상 TNR</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confusion matrix -->
+      <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+        <div class="text-xs font-medium text-slate-700 mb-3">Confusion matrix (실측)</div>
+        <table class="w-full text-xs">
+          <thead>
+            <tr class="text-slate-500">
+              <th class="text-left py-1 w-1/3"></th>
+              <th class="text-center py-1">예측 NORMAL</th>
+              <th class="text-center py-1">예측 PNEUMONIA</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t border-slate-200">
+              <td class="py-2 font-medium text-emerald-700">실제 NORMAL (234)</td>
+              <td class="text-center bg-emerald-100 rounded font-mono text-emerald-800 font-bold">189</td>
+              <td class="text-center bg-rose-50 rounded font-mono text-rose-700">45 <span class="text-[9px] text-rose-500">(FP)</span></td>
+            </tr>
+            <tr class="border-t border-slate-200">
+              <td class="py-2 font-medium text-rose-700">실제 PNEUMONIA (390)</td>
+              <td class="text-center bg-rose-50 rounded font-mono text-rose-700">2 <span class="text-[9px] text-rose-500">(FN)</span></td>
+              <td class="text-center bg-emerald-100 rounded font-mono text-emerald-800 font-bold">388</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="text-[11px] text-slate-500 mt-3 leading-relaxed">
+          <b>임상적 해석:</b> 390건의 폐렴 중 <b>388건 잡음 (FN 단 2건)</b>.
+          응급실에서 가장 위험한 시나리오 — 놓친 폐렴 — 을 99.5% 차단.
+          NORMAL 중 45건 false positive 는 영상의학 확정 단계에서 자연스럽게 걸러짐.
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-slate-100 border border-slate-200 rounded-lg p-3 text-[11px] text-slate-600 mt-3">
+      <b>측정 환경:</b>
+      Kermany test split 624장 (NORMAL 234 · PNEUMONIA 390) ·
+      checkpoint <code>outputs/classifier/best.pt</code> · 임계값 0.5 ·
+      CPU 추론 (DenseNet-121, batch=1) · 평균 latency 59ms/장, p95 64ms ·
+      측정 스크립트: <code>scripts/eval_studies.py</code> ·
+      평가 도구: scikit-learn (sklearn.metrics).
+    </div>
+
+    <p class="text-[11px] text-slate-400 mt-3 leading-relaxed">
+      위 수치는 <b>실측값</b>입니다. 학습 시 ablation 비교 (ResNet vs DenseNet, augmentation 강도 등)
+      는 대회 시점의 최종 체크포인트만 보유하여 본 페이지에서는 재현하지 못했습니다.
+      위 metric 은 그 최종 체크포인트의 단일 측정 결과입니다.
     </p>
   </div>
 </section>
@@ -403,28 +426,23 @@
         </tr>
       </thead>
       <tbody>
-        <tr class="border-t border-slate-100">
-          <td class="px-3 py-2.5">
-            <div class="font-medium">Baseline · ResNet-50 (single sigmoid)</div>
-            <div class="text-xs text-slate-500">ImageNet pretrained 단일 head</div>
-          </td>
-          <td class="text-right font-mono">0.911</td>
-          <td class="text-right font-mono">0.864</td>
-          <td class="text-right font-mono">0.83</td>
-          <td class="text-right font-mono">0.89</td>
-        </tr>
         <tr class="border-t border-slate-100 bg-emerald-50/40">
           <td class="px-3 py-2.5">
-            <div class="font-semibold text-emerald-800">DenseNet-121 + multi-label BCE ★</div>
-            <div class="text-xs text-emerald-700">14-label 동시 학습, masking 후 Pneumonia 평가</div>
+            <div class="font-semibold text-emerald-800">DenseNet-121 + Pneumonia binary ★ <span class="text-[10px] text-emerald-700 bg-emerald-100 border border-emerald-200 px-1.5 py-0.5 rounded ml-1">실측</span></div>
+            <div class="text-xs text-emerald-700">Kermany test 624장 · 임계값 0.5</div>
           </td>
-          <td class="text-right font-mono font-bold text-emerald-700">0.943</td>
-          <td class="text-right font-mono font-bold text-emerald-700">0.892</td>
-          <td class="text-right font-mono font-bold text-emerald-700">0.91</td>
-          <td class="text-right font-mono font-bold text-emerald-700">0.88</td>
+          <td class="text-right font-mono font-bold text-emerald-700">0.9818</td>
+          <td class="text-right font-mono font-bold text-emerald-700">0.9429</td>
+          <td class="text-right font-mono font-bold text-emerald-700">0.9949</td>
+          <td class="text-right font-mono font-bold text-emerald-700">0.8077</td>
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <div class="text-[11px] text-slate-400 mb-5">
+    위 1행은 <code>scripts/eval_studies.py</code> 로 측정한 단일 체크포인트 결과. 학습 시 ablation(ResNet vs DenseNet 등) 의 비교 데이터는 보존되지 않아 본 표에서 누락.
+    Average Precision = 0.9866 · 자세한 confusion matrix 는 DATA 섹션 참고.
   </div>
 
   <div class="text-sm font-medium text-slate-700 mb-2">🏥 서비스 KPI (워크플로우 효과)</div>
@@ -463,24 +481,25 @@
 
   <div class="grid md:grid-cols-3 gap-3 mt-5">
     <div class="border-l-4 border-emerald-500 bg-emerald-50/40 rounded-r-lg p-3">
-      <div class="text-xs text-slate-500">AUROC 향상</div>
-      <div class="text-2xl font-bold text-emerald-700 mt-1">+0.032</div>
-      <div class="text-xs text-slate-500 mt-1">0.911 → 0.943 (relative +3.5%)</div>
+      <div class="text-xs text-emerald-600 font-medium">실측 Sensitivity ★</div>
+      <div class="text-2xl font-bold text-emerald-700 mt-1 font-mono">0.9949</div>
+      <div class="text-xs text-slate-500 mt-1">390건 중 388건 잡음 — FN 단 2건</div>
     </div>
     <div class="border-l-4 border-brand-500 bg-brand-50/40 rounded-r-lg p-3">
       <div class="text-xs text-slate-500">응급의 1차 조치 시점</div>
       <div class="text-2xl font-bold text-brand-700 mt-1">~ 100 ×</div>
-      <div class="text-xs text-slate-500 mt-1">30~120분 → 5초 이내</div>
+      <div class="text-xs text-slate-500 mt-1">30~120분 → 5초 이내 <span class="text-amber-600">(추정)</span></div>
     </div>
     <div class="border-l-4 border-slate-400 bg-slate-50 rounded-r-lg p-3">
-      <div class="text-xs text-slate-500">추론 latency</div>
-      <div class="text-2xl font-bold text-slate-700 mt-1">~ 800 ms</div>
-      <div class="text-xs text-slate-500 mt-1">분류 + Grad-CAM 통합 · CPU 기준</div>
+      <div class="text-xs text-slate-500">실측 추론 latency</div>
+      <div class="text-2xl font-bold text-slate-700 mt-1">59 ms</div>
+      <div class="text-xs text-slate-500 mt-1">CPU · DenseNet-121 단일 추론 · p95 64ms</div>
     </div>
   </div>
 
   <p class="text-xs text-slate-400 mt-4">
-    측정 환경: Kermany test split · CPU 추론(분류) + Grad-CAM. 워크플로우 KPI 는 응급의·영상의학과 인터뷰 기반 추정치.
+    측정 환경: Kermany test split 624장 · CPU 추론 · <code>scripts/eval_studies.py</code>.
+    응급의 1차 조치 시점은 모델 추론 자체는 즉시(59ms) 가능함이 실측되었고, 30~120분 비교값은 응급실·영상의학과 통상 워크플로우 추정.
   </p>
 </section>
 

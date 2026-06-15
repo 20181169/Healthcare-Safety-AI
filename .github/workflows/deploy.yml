@@ -1,0 +1,60 @@
+name: Deploy to Lightsail
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: lightsail-deploy-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy Django app
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          port: ${{ secrets.LIGHTSAIL_SSH_PORT || 22 }}
+          script_stop: true
+          command_timeout: 15m
+          script: |
+            set -euo pipefail
+
+            cd "${{ secrets.LIGHTSAIL_PATH }}"
+
+            if [ -f "/etc/healthcare-ai.env" ]; then
+              set -a
+              . /etc/healthcare-ai.env
+              set +a
+            elif [ -f ".env" ]; then
+              set -a
+              . ./.env
+              set +a
+            fi
+
+            git fetch origin main
+            git reset --hard origin/main
+
+            if [ ! -d ".venv" ]; then
+              python3 -m venv .venv
+            fi
+
+            . .venv/bin/activate
+            python -m pip install --upgrade pip wheel setuptools
+            pip install -r requirements.txt
+            pip install gunicorn
+
+            python manage.py check --deploy
+            python manage.py migrate --noinput
+            python manage.py collectstatic --noinput
+
+            sudo systemctl restart healthcare-ai
+            sudo systemctl status healthcare-ai --no-pager

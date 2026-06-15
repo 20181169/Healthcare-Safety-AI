@@ -1,0 +1,29 @@
+{
+  "kermany_root": "C:\\Users\\user\\Downloads\\archive (1)\\chest_xray",
+  "split": "test",
+  "threshold": 0.5,
+  "device": "cpu",
+  "n_total": 624,
+  "n_normal": 234,
+  "n_pneumonia": 390,
+  "auroc": 0.9818102125794433,
+  "average_precision": 0.9865901620750954,
+  "f1": 0.9428918590522479,
+  "precision": 0.8960739030023095,
+  "recall_sensitivity": 0.9948717948717949,
+  "specificity": 0.8076923076923077,
+  "confusion_matrix": {
+    "tn": 189,
+    "fp": 45,
+    "fn": 2,
+    "tp": 388
+  },
+  "latency_ms": {
+    "mean": 58.97716939132526,
+    "median": 58.79495001863688,
+    "p95": 64.12100997986272,
+    "min": 26.340700045693666,
+    "max": 73.05320003069937
+  },
+  "elapsed_sec": 40.76799511909485
+}

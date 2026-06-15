@@ -47,20 +47,20 @@
       <h2 class="font-semibold text-slate-900 mb-1">심폐음 SR + 진단</h2>
       <p class="text-sm text-slate-600 leading-relaxed">
         가정용 청진기 LR 신호를 Audio Super-Resolution 으로 16kHz 복원 후 4-class 분류.
-        Baseline 대비 <b class="text-emerald-700">Macro F1 +15.7%p</b>.
+        SR-boost 로 <b class="text-emerald-700">Crackle Recall +0.351 (2.4× 향상)</b> 실측.
       </p>
       <div class="grid grid-cols-3 gap-2 mt-3 text-xs">
         <div class="bg-slate-50 rounded p-2 text-center">
-          <div class="font-bold text-emerald-700">0.523</div>
-          <div class="text-slate-500">Macro F1</div>
+          <div class="font-bold text-emerald-700">+0.351</div>
+          <div class="text-slate-500">Crackle Recall</div>
         </div>
         <div class="bg-slate-50 rounded p-2 text-center">
-          <div class="font-bold text-brand-700">+8.2dB</div>
-          <div class="text-slate-500">SNR ↑</div>
+          <div class="font-bold text-brand-700">+0.178</div>
+          <div class="text-slate-500">Sensitivity</div>
         </div>
         <div class="bg-slate-50 rounded p-2 text-center">
-          <div class="font-bold text-slate-700">1.2s</div>
-          <div class="text-slate-500">latency</div>
+          <div class="font-bold text-slate-700">n=1343</div>
+          <div class="text-slate-500">ICBHI val · 실측</div>
         </div>
       </div>
       <a href="{% url 'diagnosis:about' %}"
@@ -121,20 +121,20 @@
       <h2 class="font-semibold text-slate-900 mb-1">소아 X-ray 원격 판독</h2>
       <p class="text-sm text-slate-600 leading-relaxed">
         응급실 → 영상의학과 판독 지연을 AI 1차 분류 + 원격 확정 워크플로우로 단축.
-        <b class="text-emerald-700">AUROC 0.943</b>, 응급의 1차 조치 시점 <b class="text-emerald-700">100× 단축</b>.
+        <b class="text-emerald-700">실측 AUROC 0.9818</b>, 폐렴 <b class="text-emerald-700">Sensitivity 0.9949</b>.
       </p>
       <div class="grid grid-cols-3 gap-2 mt-3 text-xs">
         <div class="bg-slate-50 rounded p-2 text-center">
-          <div class="font-bold text-emerald-700">0.943</div>
-          <div class="text-slate-500">AUROC</div>
+          <div class="font-bold text-emerald-700">0.9818</div>
+          <div class="text-slate-500">AUROC · 실측</div>
         </div>
         <div class="bg-slate-50 rounded p-2 text-center">
-          <div class="font-bold text-brand-700">~100×</div>
-          <div class="text-slate-500">조치 단축</div>
+          <div class="font-bold text-emerald-700">0.9949</div>
+          <div class="text-slate-500">Sensitivity</div>
         </div>
         <div class="bg-slate-50 rounded p-2 text-center">
-          <div class="font-bold text-slate-700">800ms</div>
-          <div class="text-slate-500">+ Grad-CAM</div>
+          <div class="font-bold text-slate-700">59ms</div>
+          <div class="text-slate-500">CPU latency</div>
         </div>
       </div>
       <a href="{% url 'studies:about' %}"

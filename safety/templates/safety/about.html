@@ -55,9 +55,17 @@
 
 <!-- 3. 데이터 분석 -->
 <section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
-  <div class="flex items-center gap-2 mb-3">
+  <div class="flex items-center gap-2 mb-3 flex-wrap">
     <span class="px-2 py-0.5 bg-brand-100 text-brand-700 text-xs font-medium rounded">DATA</span>
     <h2 class="font-bold text-slate-900">데이터 분석 / 학습용 데이터 활용</h2>
+    <span class="ml-auto px-2 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-medium rounded-full">발표 자료 기준 — 재측정 대기</span>
+  </div>
+
+  <div class="bg-amber-50/60 border border-amber-200 rounded-lg p-3 text-[12px] text-amber-900 mb-5">
+    ℹ️ <b>본 섹션의 클래스 분포·임계값 비율·ablation 수치는 대회 발표 자료 시점의 값을 기반으로 합니다.</b>
+    현재 라벨이 살아있는 test set 이 별도로 확보되지 않아 재측정은 보류 중이며,
+    실측된 값은 <code>benchmark.csv</code> 의 9 sample 4-condition latency·confidence 뿐입니다.
+    아래는 학습 시점에 수행한 EDA 결과 — 면접/심사 시점에 정확한 출처와 측정 환경을 함께 제시합니다.
   </div>
 
   <!-- 3-1. 데이터 소스 -->
@@ -369,9 +377,17 @@
 
 <!-- 5. 정량 결과 (benchmark.csv 실측 기반) -->
 <section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
-  <div class="flex items-center gap-2 mb-3">
+  <div class="flex items-center gap-2 mb-3 flex-wrap">
     <span class="px-2 py-0.5 bg-brand-100 text-brand-700 text-xs font-medium rounded">METRICS</span>
     <h2 class="font-bold text-slate-900">정량 결과 (벤치마크 sample)</h2>
+    <span class="ml-auto px-2 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-medium rounded-full">benchmark.csv 9 sample 실측 + 발표 자료 추정</span>
+  </div>
+
+  <div class="bg-amber-50/60 border border-amber-200 rounded-lg p-3 text-[12px] text-amber-900 mb-4">
+    ℹ️ 아래 표의 행 중 <b>benchmark.csv 의 9 sample 측정</b>(평균 conf · 탐지 수 · latency) 은 실측이고,
+    상대 향상률(%) 과 조건별 평균은 그 9 sample 의 단순 집계입니다. 야간·저해상도 sample 의 sample 수가
+    충분하지 않으므로 일반화 가능한 통계로 해석하지 말고 시연 환경 sanity check 으로만 보면 됩니다.
+    GT 라벨이 있는 별도 test set 확보 시 mAP 까지 재측정 예정.
   </div>
 
   <p class="text-sm text-slate-600 mb-3">
