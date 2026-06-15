@@ -25,7 +25,6 @@ def _DiagnosisPipeline():
 logger = logging.getLogger(__name__)
 
 
-@login_required
 @require_http_methods(["GET", "POST"])
 def upload_view(request):
     """업로드 폼 + 최근 이력 표시."""
@@ -42,7 +41,6 @@ def upload_view(request):
                   {"form": form, "history": history})
 
 
-@login_required
 @require_http_methods(["GET"])
 def process_view(request, pk: int):
     """업로드된 녹음에 대해 SR 복원 + 진단을 동기 실행."""
@@ -86,7 +84,6 @@ def process_view(request, pk: int):
     return redirect("diagnosis:result", pk=rec.pk)
 
 
-@login_required
 @require_http_methods(["GET"])
 def result_view(request, pk: int):
     rec = get_object_or_404(Recording, pk=pk)
@@ -104,7 +101,6 @@ def result_view(request, pk: int):
     return render(request, "diagnosis/result.html", {"rec": rec, "probs": probs})
 
 
-@login_required
 @require_http_methods(["GET"])
 def history_view(request):
     qs = Recording.objects.all()[:100]

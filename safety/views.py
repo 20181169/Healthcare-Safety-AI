@@ -73,7 +73,6 @@ def _save_event_from_result(event: DetectionEvent, run: dict):
 
 # ---------- 화면 ----------
 
-@login_required
 def dashboard(request):
     today = timezone.now().date()
     week_ago = today - timedelta(days=7)
@@ -114,7 +113,6 @@ def dashboard(request):
     })
 
 
-@login_required
 def upload(request):
     if request.method == "POST":
         form = UploadForm(request.POST, request.FILES)
@@ -149,7 +147,6 @@ def upload(request):
     return render(request, "safety/upload.html", {"form": form})
 
 
-@login_required
 def history(request):
     qs = (DetectionEvent.objects
           .select_related("camera")
@@ -179,7 +176,6 @@ def history(request):
     })
 
 
-@login_required
 def event_detail(request, pk: int):
     event = get_object_or_404(
         DetectionEvent.objects.select_related("camera")
@@ -189,7 +185,6 @@ def event_detail(request, pk: int):
     return render(request, "safety/event_detail.html", {"event": event})
 
 
-@login_required
 def live(request):
     cameras = Camera.objects.filter(is_active=True)
     return render(request, "safety/live.html", {"cameras": cameras})
@@ -243,7 +238,6 @@ def _overlay(frame: np.ndarray, results: list, anonymize: bool) -> bytes:
     return buf.tobytes() if ok else b""
 
 
-@login_required
 def live_stream(request, camera_id: int):
     """비동기 추론 라이브 스트림.
 

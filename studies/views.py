@@ -5,6 +5,7 @@ from datetime import datetime
 from django.apps import apps
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
@@ -31,7 +32,34 @@ def _disease_labels():
         return []
 
 
-@login_required
+def _demo_user():
+    User = get_user_model()
+    user, created = User.objects.get_or_create(
+        email="demo@healthcare-safety-ai.local",
+        defaults={
+            "name": "Demo User",
+            "role": getattr(User, "ROLE_PARAMEDIC", "paramedic"),
+            "affiliation": "Portfolio demo",
+        },
+    )
+    if created:
+        user.set_unusable_password()
+        user.save(update_fields=["password"])
+    return user
+
+
+def _demo_patient():
+    return Patient.objects.get_or_create(
+        patient_code="DEMO-PEDIA-XRAY",
+        defaults={
+            "name": "Demo Patient",
+            "sex": "F",
+            "created_by": _demo_user(),
+            "notes": "비로그인 포트폴리오 데모용 자동 생성 환자",
+        },
+    )[0]
+
+
 def study_list(request):
     status = request.GET.get("status")
     qs = Study.objects.select_related("patient", "uploader").all()
@@ -40,16 +68,20 @@ def study_list(request):
     return render(request, "studies/list.html", {"studies": qs[:200], "status": status})
 
 
-@login_required
 def study_new(request):
     patient_id = request.GET.get("patient_id")
     patient = Patient.objects.filter(pk=patient_id).first() if patient_id else None
+    if not request.user.is_authenticated and patient is None:
+        patient = _demo_patient()
 
     if request.method == "POST":
-        form = StudyUploadForm(request.POST, request.FILES)
+        data = request.POST.copy()
+        if not request.user.is_authenticated and not data.get("patient"):
+            data["patient"] = str(_demo_patient().pk)
+        form = StudyUploadForm(data, request.FILES)
         if form.is_valid():
             study = form.save(commit=False)
-            study.uploader = request.user
+            study.uploader = request.user if request.user.is_authenticated else _demo_user()
             study.status = Study.STATUS_UPLOADED
             study.save()
             _run_inference(study)
@@ -58,7 +90,7 @@ def study_new(request):
         initial = {"patient": patient} if patient else {}
         form = StudyUploadForm(initial=initial)
 
-    patients = Patient.objects.all()[:50]
+    patients = Patient.objects.all()[:50] if request.user.is_authenticated else [patient]
     return render(request, "studies/new.html",
                   {"form": form, "patient": patient, "patients": patients})
 
@@ -97,7 +129,6 @@ def _run_inference(study: Study):
     study.save(update_fields=["status"])
 
 
-@login_required
 def study_detail(request, pk):
     study = get_object_or_404(Study.objects.select_related("patient", "uploader"), pk=pk)
     diagnosis = getattr(study, "diagnosis", None)
@@ -107,7 +138,6 @@ def study_detail(request, pk):
     })
 
 
-@login_required
 @require_POST
 def study_rerun_cam(request, pk):
     study = get_object_or_404(Study, pk=pk)
@@ -162,7 +192,6 @@ def study_confirm(request, pk):
     return redirect("studies:detail", pk=pk)
 
 
-@login_required
 def study_report(request, pk):
     study = get_object_or_404(Study.objects.select_related("patient", "uploader"), pk=pk)
     diagnosis = getattr(study, "diagnosis", None)
