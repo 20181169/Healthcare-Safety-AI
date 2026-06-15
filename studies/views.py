@@ -1,7 +1,7 @@
 import json
 import os
-from datetime import datetime
 
+import numpy as np
 from django.apps import apps
 from django.conf import settings
 from django.contrib import messages
@@ -11,6 +11,7 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from PIL import Image, UnidentifiedImageError
 
 from patients.models import Patient
 
@@ -60,6 +61,55 @@ def _demo_patient():
     )[0]
 
 
+def _validate_xray_upload(uploaded_file) -> tuple[bool, str]:
+    """Reject obvious non-X-ray uploads before the classifier sees them.
+
+    This is a lightweight demo guard, not a medical image-quality model. It
+    prevents screenshots, documents, and ordinary color photos from being
+    presented as valid AI chest X-ray diagnoses.
+    """
+    name = (uploaded_file.name or "").lower()
+    if name.endswith((".dcm", ".dicom")):
+        return True, ""
+
+    try:
+        uploaded_file.seek(0)
+        with Image.open(uploaded_file) as img:
+            width, height = img.size
+            rgb = img.convert("RGB")
+            rgb.thumbnail((256, 256))
+            arr = np.asarray(rgb, dtype=np.float32)
+    except (UnidentifiedImageError, OSError, ValueError):
+        return False, "이미지 파일을 열 수 없습니다. PNG/JPG 형식의 흉부 X-ray를 업로드해주세요."
+    finally:
+        uploaded_file.seek(0)
+
+    if width < 128 or height < 128:
+        return False, "이미지 해상도가 너무 낮습니다. 흉부 X-ray 원본 이미지를 업로드해주세요."
+
+    aspect = width / max(height, 1)
+    if aspect < 0.55 or aspect > 1.9:
+        return False, "흉부 X-ray 영상 비율과 다릅니다. 화면 캡처나 문서가 아닌 X-ray 이미지를 업로드해주세요."
+
+    channel_spread = float(np.mean(arr.max(axis=2) - arr.min(axis=2)))
+    gray = arr.mean(axis=2)
+    mean_intensity = float(gray.mean())
+    contrast = float(gray.std())
+    dark_ratio = float((gray < 35).mean())
+    bright_ratio = float((gray > 245).mean())
+
+    if channel_spread > 12.0:
+        return False, "컬러 화면/일반 사진으로 보입니다. 흑백 흉부 X-ray 이미지만 판독할 수 있습니다."
+    if contrast < 18.0:
+        return False, "영상 대비가 너무 낮아 X-ray로 판독하기 어렵습니다."
+    if mean_intensity > 185.0 and dark_ratio < 0.08:
+        return False, "밝은 화면 캡처나 문서 이미지로 보입니다. 흉부 X-ray 원본을 업로드해주세요."
+    if bright_ratio > 0.55:
+        return False, "흰 배경이 대부분인 이미지입니다. 흉부 X-ray 원본을 업로드해주세요."
+
+    return True, ""
+
+
 def study_list(request):
     status = request.GET.get("status")
     qs = Study.objects.select_related("patient", "uploader").all()
@@ -80,6 +130,14 @@ def study_new(request):
             data["patient"] = str(_demo_patient().pk)
         form = StudyUploadForm(data, request.FILES)
         if form.is_valid():
+            ok, reason = _validate_xray_upload(form.cleaned_data["image"])
+            if not ok:
+                messages.error(request, reason)
+                return render(request, "studies/new.html", {
+                    "form": form,
+                    "patient": patient,
+                    "patients": [patient] if not request.user.is_authenticated else Patient.objects.all()[:50],
+                })
             study = form.save(commit=False)
             study.uploader = request.user if request.user.is_authenticated else _demo_user()
             study.status = Study.STATUS_UPLOADED
