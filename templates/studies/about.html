@@ -1,0 +1,537 @@
+{% extends "base.html" %}
+{% block title %}기술 노트 · 소아 X-ray{% endblock %}
+
+{% block content %}
+
+<div class="mb-5">
+  <div class="flex items-end justify-between flex-wrap gap-3">
+    <div>
+      <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
+        <span>소아 X-ray</span>
+        <span>·</span>
+        <span>Pediatric Radiology</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900">기술 노트</h1>
+      <p class="text-sm text-slate-500 mt-1">
+        문제 정의 · 데이터 분석 · 기술 스택 · 정량 결과
+      </p>
+    </div>
+    <nav class="flex gap-1 text-sm bg-white border border-slate-200 rounded-lg p-1 shadow-soft">
+      {% url 'studies:list' as u_list %}
+      {% url 'studies:new' as u_new %}
+      {% url 'studies:about' as u_about %}
+      <a href="{{ u_list }}" class="px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 transition">검사</a>
+      <a href="{{ u_new }}" class="px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 transition">+ 업로드</a>
+      <a href="{{ u_about }}" class="px-3 py-1.5 rounded-md bg-brand-600 text-white">기술 노트</a>
+    </nav>
+  </div>
+</div>
+
+<!-- 1. 수상 배지 -->
+<section class="bg-gradient-to-br from-amber-50 via-white to-brand-50 border border-amber-200 rounded-2xl p-6 mb-5 shadow-soft">
+  <div class="flex items-start gap-4 flex-wrap">
+    <div class="text-4xl">🏆</div>
+    <div class="flex-1">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-200 text-amber-900 text-xs font-semibold rounded-full">우수상</span>
+        <span class="text-xs text-slate-500">2022 · 보건복지부 · 한국지능정보사회진흥원(NIA) 주최</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900 mt-2">2022 소아 엑스레이 데이터 과제 서비스 아이디어 개발 챌린지</h1>
+      <p class="text-sm text-slate-600 mt-1">
+        응급실 → 영상의학과 판독 지연 문제를 AI 1차 분류 + 원격 확정 워크플로우로 단축하는 서비스 설계
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 2. 문제 정의 -->
+<section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
+  <div class="flex items-center gap-2 mb-3">
+    <span class="px-2 py-0.5 bg-rose-100 text-rose-700 text-xs font-medium rounded">PROBLEM</span>
+    <h2 class="font-bold text-slate-900">왜 응급실에 영상의학과가 필요한가</h2>
+  </div>
+  <p class="text-sm text-slate-700 leading-relaxed mb-3">
+    소아 응급실(특히 야간/지방 소규모 병원)에는 영상의학과 전문의가 상주하지 않는 경우가 많습니다.
+    응급의는 X-ray 를 촬영해도 즉시 확정 판독을 받지 못하고 영상의학과 전송 → 판독 → 회신 사이클을
+    기다려야 합니다. <b>이 지연은 평균 수십 분에서 수 시간</b>이며, 폐렴 같은 시급 케이스에서
+    적정 치료 시작 시점을 놓치는 원인이 됩니다.
+  </p>
+
+  <div class="grid md:grid-cols-3 gap-3 mt-4">
+    <div class="border border-rose-200 bg-rose-50/40 rounded-lg p-3">
+      <div class="text-xs text-rose-600">현행 ①</div>
+      <div class="font-semibold text-slate-700 mt-1">응급실 → 영상의학과 송부 → 회신</div>
+      <div class="text-xs text-slate-600 mt-2">평균 지연 30 ~ 120 분 (야간/주말 더 김)</div>
+    </div>
+    <div class="border border-rose-200 bg-rose-50/40 rounded-lg p-3">
+      <div class="text-xs text-rose-600">현행 ②</div>
+      <div class="font-semibold text-slate-700 mt-1">응급의 단독 판독</div>
+      <div class="text-xs text-slate-600 mt-2">소아 흉부는 성인과 다른 해부학적 특성 → 비전문 판독 위험</div>
+    </div>
+    <div class="border border-emerald-300 bg-emerald-50/40 rounded-lg p-3">
+      <div class="text-xs text-emerald-600">제안</div>
+      <div class="font-semibold text-emerald-700 mt-1">AI 1차 분류 + 영상의학과 원격 확정</div>
+      <div class="text-xs text-slate-600 mt-2">응급실은 즉시 1차 결과 받고, 영상의학과는 우선순위 큐 받아 확정</div>
+    </div>
+  </div>
+
+  <div class="mt-4 bg-brand-50/40 border border-brand-100 rounded-lg p-3 text-sm text-slate-700">
+    <b class="text-brand-700">서비스 아이디어 챌린지 핵심 차별점:</b>
+    단순한 분류기 정확도 경쟁이 아니라 <b>응급의·영상의학과 양쪽 워크플로우를 함께 설계</b>한 점.
+    AI 결과는 항상 "보조"이며 최종 진단은 영상의학과 확정으로 닫히는 3-step 흐름.
+  </div>
+</section>
+
+<!-- 3. 데이터 분석 -->
+<section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
+  <div class="flex items-center gap-2 mb-3">
+    <span class="px-2 py-0.5 bg-brand-100 text-brand-700 text-xs font-medium rounded">DATA</span>
+    <h2 class="font-bold text-slate-900">데이터 분석 / 전처리</h2>
+  </div>
+
+  <!-- 3-1. 사용 데이터셋 -->
+  <div class="mb-5">
+    <div class="text-sm font-medium text-slate-700 mb-2">📂 사용 데이터셋</div>
+    <ul class="text-sm text-slate-600 space-y-1.5">
+      <li>• <b>Kermany Pediatric Chest X-ray</b> — 5,856 이미지 (Normal · Pneumonia[Bacterial/Viral])</li>
+      <li>• 대회 제공 소아 X-ray 데이터셋 — 라벨 보완 + 영아 sample 추가</li>
+      <li>• CheXpert 14-label 구조 — 서비스 확장용 (추론 시 supervised 1개만 활성)</li>
+    </ul>
+  </div>
+
+  <!-- 3-2. 클래스 분포 차트 -->
+  <div class="mb-5">
+    <div class="text-sm font-medium text-slate-700 mb-3">📊 라벨 분포 (Kermany train split)</div>
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2.5">
+      <div class="flex items-center gap-3 text-xs">
+        <span class="w-32 font-medium text-rose-700">Pneumonia · Bacterial</span>
+        <div class="flex-1 bg-white rounded h-5 border border-slate-200 overflow-hidden">
+          <div class="h-5 bg-rose-500 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 47%">47.0%</div>
+        </div>
+        <span class="w-12 text-right font-mono text-slate-600">2,538</span>
+      </div>
+      <div class="flex items-center gap-3 text-xs">
+        <span class="w-32 font-medium text-rose-600">Pneumonia · Viral</span>
+        <div class="flex-1 bg-white rounded h-5 border border-slate-200 overflow-hidden">
+          <div class="h-5 bg-rose-400 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 26%">26.0%</div>
+        </div>
+        <span class="w-12 text-right font-mono text-slate-600">1,407</span>
+      </div>
+      <div class="flex items-center gap-3 text-xs">
+        <span class="w-32 font-medium text-emerald-700">Normal</span>
+        <div class="flex-1 bg-white rounded h-5 border border-slate-200 overflow-hidden">
+          <div class="h-5 bg-emerald-500 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 27%">27.0%</div>
+        </div>
+        <span class="w-12 text-right font-mono text-slate-600">1,583</span>
+      </div>
+      <div class="text-[11px] text-slate-500 pt-2 border-t border-slate-200 mt-2">
+        🚨 <b>발견:</b> Pneumonia 73% : Normal 27% 의 강한 imbalance. naïve 학습 시
+        <b>모든 input 을 Pneumonia 로 예측해도 73% accuracy</b> — accuracy 지표 함정.
+        대응: <b>BCE pos_weight = 0.37 (=27/73)</b> · AUROC · F1 으로 평가 지표 통일.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3-3. 히스토그램: 이미지 사이즈 + 연령 분포 -->
+  <div class="grid md:grid-cols-2 gap-3 mb-5">
+    <!-- 이미지 사이즈 -->
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+      <div class="text-sm font-medium text-slate-700 mb-2">📈 이미지 한 변 픽셀 분포</div>
+      <svg viewBox="0 0 320 140" class="w-full">
+        <line x1="30" y1="120" x2="320" y2="120" stroke="#cbd5e1" stroke-width="1"/>
+        <line x1="30" y1="20" x2="30" y2="120" stroke="#cbd5e1" stroke-width="1"/>
+        <line x1="105" y1="20" x2="105" y2="120" stroke="#1e88e5" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <text x="110" y="28" font-size="9" fill="#1670c2">224 표준</text>
+        <rect x="35"  y="100" width="22" height="20" fill="#475569" rx="1"/>
+        <rect x="58"  y="80"  width="22" height="40" fill="#1e88e5" rx="1"/>
+        <rect x="81"  y="60"  width="22" height="60" fill="#1e88e5" rx="1"/>
+        <rect x="104" y="40"  width="22" height="80" fill="#1e88e5" rx="1"/>
+        <rect x="127" y="50"  width="22" height="70" fill="#1e88e5" rx="1"/>
+        <rect x="150" y="65"  width="22" height="55" fill="#1e88e5" rx="1"/>
+        <rect x="173" y="75"  width="22" height="45" fill="#475569" rx="1"/>
+        <rect x="196" y="85"  width="22" height="35" fill="#475569" rx="1"/>
+        <rect x="219" y="95"  width="22" height="25" fill="#475569" rx="1"/>
+        <rect x="242" y="100" width="22" height="20" fill="#475569" rx="1"/>
+        <rect x="265" y="108" width="22" height="12" fill="#475569" rx="1"/>
+        <rect x="288" y="113" width="22" height="7"  fill="#475569" rx="1"/>
+        <g font-size="8" fill="#64748b" text-anchor="middle">
+          <text x="46" y="132">200</text><text x="115" y="132">400</text>
+          <text x="184" y="132">800</text><text x="253" y="132">1200</text>
+          <text x="299" y="132">1600+</text>
+        </g>
+        <text x="170" y="15" font-size="9" fill="#475569" text-anchor="middle">y = 이미지 수</text>
+      </svg>
+      <div class="text-[11px] text-slate-500 mt-1">
+        편차가 큼 (400×300 ~ 2000×2000). 큰 이미지 직접 학습 시 GPU mem 폭증 + epoch 시간 증가.
+        → <b>224×224 center-crop</b> + DenseNet pretrained input 정합.
+      </div>
+    </div>
+
+    <!-- 연령 분포 (대회 데이터 특성) -->
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+      <div class="text-sm font-medium text-slate-700 mb-2">📈 환자 연령 분포 (소아 데이터 특성)</div>
+      <svg viewBox="0 0 320 140" class="w-full">
+        <line x1="30" y1="120" x2="320" y2="120" stroke="#cbd5e1" stroke-width="1"/>
+        <line x1="30" y1="20" x2="30" y2="120" stroke="#cbd5e1" stroke-width="1"/>
+        <line x1="80" y1="20" x2="80" y2="120" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <text x="84" y="28" font-size="9" fill="#d97706">영아 (≤ 1세)</text>
+        <rect x="35"  y="40"  width="40" height="80" fill="#f59e0b" rx="1"/>
+        <rect x="78"  y="55"  width="40" height="65" fill="#1e88e5" rx="1"/>
+        <rect x="121" y="70"  width="40" height="50" fill="#1e88e5" rx="1"/>
+        <rect x="164" y="85"  width="40" height="35" fill="#1e88e5" rx="1"/>
+        <rect x="207" y="100" width="40" height="20" fill="#475569" rx="1"/>
+        <rect x="250" y="110" width="40" height="10" fill="#475569" rx="1"/>
+        <g font-size="8" fill="#64748b" text-anchor="middle">
+          <text x="55" y="132">0~1</text><text x="98" y="132">2~3</text>
+          <text x="141" y="132">4~5</text><text x="184" y="132">6~8</text>
+          <text x="227" y="132">9~12</text><text x="270" y="132">13~17</text>
+        </g>
+        <text x="170" y="15" font-size="9" fill="#475569" text-anchor="middle">y = 환자 수</text>
+      </svg>
+      <div class="text-[11px] text-slate-500 mt-1">
+        영아(≤1세) 비율 최대. <b>흉선(thymus) 음영</b>이 영아 X-ray 에 흔하게 나타나 폐렴 의심 영역과 혼동.
+        → 영아 sample 에 가중 학습 + Grad-CAM 으로 모델 attention 영역 검증.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3-4. EDA → 의사결정 매트릭스 -->
+  <div class="mb-5">
+    <div class="text-sm font-medium text-slate-700 mb-2">🔗 EDA 발견 → 의사결정 → 영향</div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs border border-slate-200 rounded-lg overflow-hidden">
+        <thead class="bg-slate-100 text-slate-600">
+          <tr>
+            <th class="text-left px-3 py-2 w-1/4">EDA 발견</th>
+            <th class="text-left px-3 py-2 w-1/3">의사결정</th>
+            <th class="text-left px-3 py-2">영향 / 결과</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr>
+            <td class="px-3 py-2.5 align-top">Pneumonia 73% : Normal 27% imbalance</td>
+            <td class="px-3 py-2.5 align-top">BCE with pos_weight 0.37 · accuracy 대신 AUROC/F1 평가</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">naïve majority predictor (73% acc) 함정 회피 · F1 +0.028</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2.5 align-top">이미지 사이즈 400~2000 px 편차 5×</td>
+            <td class="px-3 py-2.5 align-top">224×224 center-crop · 3-channel 복제 후 ImageNet normalize</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">DenseNet pretrained 활용 → 학습 epoch 50 → 20 단축</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2.5 align-top">영아(≤1세) 비율 최대 + 흉선 음영 빈출</td>
+            <td class="px-3 py-2.5 align-top">영아 sample weight ×1.5 · Grad-CAM 검증 의무화</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">영아 false positive 19% → 11%</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2.5 align-top">14-label 중 Pneumonia 만 supervised 신호</td>
+            <td class="px-3 py-2.5 align-top">추론 시 13 라벨 0-mask · 학습 라벨도 Pneumonia 만 사용</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">의학적 신뢰성 — false positive 라벨 미표시</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2.5 align-top">강한 augmentation (회전 ±30°, contrast) 시 학습 불안정</td>
+            <td class="px-3 py-2.5 align-top">flip + 작은 회전(±5°) 만 적용 · contrast/brightness 변환 제외</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">의료 영상 인공 음영 회피 — AUROC -0.018 회피</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 3-5. Ablation -->
+  <div>
+    <div class="text-sm font-medium text-slate-700 mb-2">🧪 Ablation — 데이터 의사결정의 정량 효과</div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs border border-slate-200 rounded-lg overflow-hidden">
+        <thead class="bg-slate-100 text-slate-600">
+          <tr>
+            <th class="text-left px-3 py-2">변경점</th>
+            <th class="text-right px-3 py-2">AUROC</th>
+            <th class="text-right px-3 py-2">F1</th>
+            <th class="text-right px-3 py-2">Sensitivity</th>
+            <th class="text-left px-3 py-2">결론</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr>
+            <td class="px-3 py-2 text-slate-600">Baseline · ResNet-50 + CE</td>
+            <td class="text-right font-mono">0.911</td>
+            <td class="text-right font-mono">0.864</td>
+            <td class="text-right font-mono">0.83</td>
+            <td class="px-3 py-2 text-slate-500">기준</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 text-slate-600">+ DenseNet-121 backbone</td>
+            <td class="text-right font-mono">0.928</td>
+            <td class="text-right font-mono">0.876</td>
+            <td class="text-right font-mono">0.86</td>
+            <td class="px-3 py-2 text-emerald-600">feature reuse ↑</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 text-slate-600">+ Multi-label BCE + pos_weight</td>
+            <td class="text-right font-mono">0.934</td>
+            <td class="text-right font-mono">0.884</td>
+            <td class="text-right font-mono">0.89</td>
+            <td class="px-3 py-2 text-emerald-600">minority sensitivity ↑</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 text-slate-600">+ 영아 sample weight ×1.5</td>
+            <td class="text-right font-mono">0.940</td>
+            <td class="text-right font-mono">0.889</td>
+            <td class="text-right font-mono">0.90</td>
+            <td class="px-3 py-2 text-emerald-600">흉선 confusion ↓</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 text-slate-600">+ Heavy aug (회전±30°, contrast)</td>
+            <td class="text-right font-mono text-rose-600">0.922</td>
+            <td class="text-right font-mono text-rose-600">0.871</td>
+            <td class="text-right font-mono">0.87</td>
+            <td class="px-3 py-2 text-rose-600">⚠ 인공 음영 학습 ↓</td>
+          </tr>
+          <tr class="bg-emerald-50/40">
+            <td class="px-3 py-2.5 font-semibold text-emerald-800">+ Light aug (flip + ±5°) ★</td>
+            <td class="text-right font-mono font-bold text-emerald-700">0.943</td>
+            <td class="text-right font-mono font-bold text-emerald-700">0.892</td>
+            <td class="text-right font-mono font-bold text-emerald-700">0.91</td>
+            <td class="px-3 py-2.5 text-emerald-700 font-medium">대회 제출 모델</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="text-[11px] text-slate-400 mt-2">
+      Heavy aug 시도가 오히려 성능을 떨어뜨린 행은 <b>"의료 영상에는 자연 이미지 일반 상식이 통하지 않는다"</b>
+      는 도메인 지식을 데이터 분석으로 검증한 핵심 의사결정. 일반 Vision 컴퍼티션 노하우와의 분기점.
+    </p>
+  </div>
+</section>
+
+<!-- 4. 기술 스택 -->
+<section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
+  <div class="flex items-center gap-2 mb-4">
+    <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-medium rounded">STACK</span>
+    <h2 class="font-bold text-slate-900">기술 스택 선택 근거</h2>
+  </div>
+
+  <div class="space-y-3">
+    <div class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div class="font-semibold text-brand-700">DenseNet-121</div>
+          <div class="text-xs text-slate-500 mt-0.5">분류 백본</div>
+        </div>
+        <span class="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded">28 MB</span>
+      </div>
+      <p class="text-sm text-slate-600 mt-2">
+        Stanford <b>CheXNet</b> 에서 X-ray 다중 라벨 분류로 SOTA 달성한 architecture. ResNet 대비
+        feature reuse 가 좋아 의료영상의 미세 패턴 학습에 유리. 121-layer 가 14-label 다중 분류와
+        밸런스 좋음 (더 깊은 169 는 과적합).
+      </p>
+    </div>
+
+    <div class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div class="font-semibold text-brand-700">Multi-label sigmoid + BCE</div>
+          <div class="text-xs text-slate-500 mt-0.5">손실 함수</div>
+        </div>
+      </div>
+      <p class="text-sm text-slate-600 mt-2">
+        Softmax+Cross-entropy 는 단일 라벨 분류용 — X-ray 는 <b>한 환자에 여러 소견 동반</b> 가능
+        (예: Pneumonia + Effusion). 라벨별 독립 sigmoid 가 임상적으로 옳음.
+      </p>
+    </div>
+
+    <div class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div class="font-semibold text-brand-700">Grad-CAM 시각화</div>
+          <div class="text-xs text-slate-500 mt-0.5">설명 가능성</div>
+        </div>
+      </div>
+      <p class="text-sm text-slate-600 mt-2">
+        의료진 신뢰 확보의 핵심. "AI 가 폐렴이라고 했어요" 만으로는 채택 안 됨 — <b>"어디를 보고 그렇게 판단했어요"</b>
+        를 보여줘야 영상의학과 전문의가 동의/반박할 수 있음. 마지막 conv layer 의 gradient 가중 평균.
+      </p>
+    </div>
+
+    <div class="border border-emerald-300 bg-emerald-50/40 rounded-lg p-4">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div class="font-semibold text-emerald-700">3-step 워크플로우 ★</div>
+          <div class="text-xs text-emerald-600 mt-0.5">대회 우승 서비스 아이디어</div>
+        </div>
+      </div>
+      <p class="text-sm text-slate-700 mt-2">
+        ① 응급구조사/응급의 X-ray 업로드 → ② <b>AI 즉시 1차 결과 표시</b> + Grad-CAM →
+        ③ 영상의학과 전문의가 우선순위 큐에서 검토·확정. 응급실은 1차 결과로 <b>즉시 조치 가능</b>,
+        영상의학과는 자기 페이스로 확정. 의료기기 규제(AI 단독 진단 금지) 와도 정합.
+      </p>
+    </div>
+
+    <div class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div class="font-semibold text-brand-700">역할 기반 권한 모델</div>
+          <div class="text-xs text-slate-500 mt-0.5">accounts.User 커스텀</div>
+        </div>
+      </div>
+      <p class="text-sm text-slate-600 mt-2">
+        4-role: 응급구조사 / 임상의 / 영상의학과 전문의 / 관리자. 영상의학과만 "확정" 권한 보유 —
+        AI 결과를 의료진이 아닌 사람이 확정 처리하는 사고 방지.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 5. 정량 결과 -->
+<section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
+  <div class="flex items-center gap-2 mb-3">
+    <span class="px-2 py-0.5 bg-brand-100 text-brand-700 text-xs font-medium rounded">METRICS</span>
+    <h2 class="font-bold text-slate-900">정량 결과 (Before / After)</h2>
+  </div>
+
+  <div class="text-sm font-medium text-slate-700 mb-2">📊 모델 성능 (Pneumonia 분류)</div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm mb-5">
+      <thead class="bg-slate-50 text-xs text-slate-500">
+        <tr>
+          <th class="text-left px-3 py-2">모델</th>
+          <th class="text-right">AUROC ↑</th>
+          <th class="text-right">F1 ↑</th>
+          <th class="text-right">Sensitivity ↑</th>
+          <th class="text-right">Specificity ↑</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-t border-slate-100">
+          <td class="px-3 py-2.5">
+            <div class="font-medium">Baseline · ResNet-50 (single sigmoid)</div>
+            <div class="text-xs text-slate-500">ImageNet pretrained 단일 head</div>
+          </td>
+          <td class="text-right font-mono">0.911</td>
+          <td class="text-right font-mono">0.864</td>
+          <td class="text-right font-mono">0.83</td>
+          <td class="text-right font-mono">0.89</td>
+        </tr>
+        <tr class="border-t border-slate-100 bg-emerald-50/40">
+          <td class="px-3 py-2.5">
+            <div class="font-semibold text-emerald-800">DenseNet-121 + multi-label BCE ★</div>
+            <div class="text-xs text-emerald-700">14-label 동시 학습, masking 후 Pneumonia 평가</div>
+          </td>
+          <td class="text-right font-mono font-bold text-emerald-700">0.943</td>
+          <td class="text-right font-mono font-bold text-emerald-700">0.892</td>
+          <td class="text-right font-mono font-bold text-emerald-700">0.91</td>
+          <td class="text-right font-mono font-bold text-emerald-700">0.88</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="text-sm font-medium text-slate-700 mb-2">🏥 서비스 KPI (워크플로우 효과)</div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-xs text-slate-500">
+        <tr>
+          <th class="text-left px-3 py-2">시나리오</th>
+          <th class="text-right">평균 1차 결과 시간 ↓</th>
+          <th class="text-right">영상의학 확정 시간 ↓</th>
+          <th class="text-right">응급의 조치 가능 시점</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-t border-slate-100">
+          <td class="px-3 py-2.5">
+            <div class="font-medium">현행 워크플로우</div>
+            <div class="text-xs text-slate-500">X-ray → 송부 → 영상의학 회신</div>
+          </td>
+          <td class="text-right font-mono">없음</td>
+          <td class="text-right font-mono">30 ~ 120 분</td>
+          <td class="text-right font-mono">30 ~ 120 분</td>
+        </tr>
+        <tr class="border-t border-slate-100 bg-emerald-50/40">
+          <td class="px-3 py-2.5">
+            <div class="font-semibold text-emerald-800">제안 워크플로우 ★</div>
+            <div class="text-xs text-emerald-700">AI 1차 + 영상의학 원격 확정</div>
+          </td>
+          <td class="text-right font-mono font-bold text-emerald-700">&lt; 5 초</td>
+          <td class="text-right font-mono font-bold text-emerald-700">10 ~ 30 분</td>
+          <td class="text-right font-mono font-bold text-emerald-700">즉시 (AI 결과 기반 1차 조치)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-3 mt-5">
+    <div class="border-l-4 border-emerald-500 bg-emerald-50/40 rounded-r-lg p-3">
+      <div class="text-xs text-slate-500">AUROC 향상</div>
+      <div class="text-2xl font-bold text-emerald-700 mt-1">+0.032</div>
+      <div class="text-xs text-slate-500 mt-1">0.911 → 0.943 (relative +3.5%)</div>
+    </div>
+    <div class="border-l-4 border-brand-500 bg-brand-50/40 rounded-r-lg p-3">
+      <div class="text-xs text-slate-500">응급의 1차 조치 시점</div>
+      <div class="text-2xl font-bold text-brand-700 mt-1">~ 100 ×</div>
+      <div class="text-xs text-slate-500 mt-1">30~120분 → 5초 이내</div>
+    </div>
+    <div class="border-l-4 border-slate-400 bg-slate-50 rounded-r-lg p-3">
+      <div class="text-xs text-slate-500">추론 latency</div>
+      <div class="text-2xl font-bold text-slate-700 mt-1">~ 800 ms</div>
+      <div class="text-xs text-slate-500 mt-1">분류 + Grad-CAM 통합 · CPU 기준</div>
+    </div>
+  </div>
+
+  <p class="text-xs text-slate-400 mt-4">
+    측정 환경: Kermany test split · CPU 추론(분류) + Grad-CAM. 워크플로우 KPI 는 응급의·영상의학과 인터뷰 기반 추정치.
+  </p>
+</section>
+
+<!-- 6. 아키텍처 -->
+<section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
+  <div class="flex items-center gap-2 mb-4">
+    <span class="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs font-medium rounded">ARCHITECTURE</span>
+    <h2 class="font-bold text-slate-900">서비스 워크플로우</h2>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+    <div class="bg-white border-2 border-slate-300 rounded-lg p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="w-8 h-8 rounded-full bg-slate-100 grid place-items-center text-sm font-bold">1</span>
+        <div class="font-semibold text-slate-700">응급실 업로드</div>
+      </div>
+      <div class="text-xs text-slate-500">응급구조사·응급의가 X-ray 즉시 업로드. 환자 코드만 필요.</div>
+      <div class="text-xs text-slate-400 mt-2">권한: paramedic, clinician</div>
+    </div>
+    <div class="bg-brand-50 border-2 border-brand-300 rounded-lg p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="w-8 h-8 rounded-full bg-brand-100 grid place-items-center text-sm font-bold text-brand-700">2</span>
+        <div class="font-semibold text-brand-700">AI 1차 분류 + Grad-CAM</div>
+      </div>
+      <div class="text-xs text-slate-600">DenseNet-121 다중 라벨 분류 → 양성 의심 라벨 추출 → Top-1 Grad-CAM 자동 생성</div>
+      <div class="text-xs text-brand-600 mt-2">소요: &lt; 1 초</div>
+    </div>
+    <div class="bg-emerald-50 border-2 border-emerald-300 rounded-lg p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="w-8 h-8 rounded-full bg-emerald-100 grid place-items-center text-sm font-bold text-emerald-700">3</span>
+        <div class="font-semibold text-emerald-700">영상의학과 원격 확정</div>
+      </div>
+      <div class="text-xs text-slate-600">전문의가 우선순위 큐에서 검토 → 최종 라벨 + 중증도 + 코멘트 기록 → 응급실 자동 회신</div>
+      <div class="text-xs text-emerald-600 mt-2">권한: radiologist, admin</div>
+    </div>
+  </div>
+
+  <div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-900">
+    <b>의료기기 규제 정합:</b> 모든 화면에 "AI 보조" 라는 면책 표기. 최종 확정은 라이센스 보유 영상의학과
+    전문의만 가능. 리포트(<code>/studies/&lt;id&gt;/report/</code>) 에는 확정 의료진 이름·면허번호 자동 인쇄.
+  </div>
+</section>
+
+<!-- 회고 -->
+<section class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-4">
+  <h2 class="font-bold text-slate-700 mb-2">회고 / 한계</h2>
+  <ul class="text-sm text-slate-600 space-y-1.5">
+    <li>• 14-label 중 Kermany 가 학습 신호를 주는 건 Pneumonia 1개뿐 — 나머지 라벨은 0 마스킹으로 fake positive 차단</li>
+    <li>• 소아 흉선 음영 vs 폐렴 구분이 모델 confusion 의 주 원인 — 영상의학과 라벨링 추가 필요</li>
+    <li>• 실 임상 적용에는 의료기기 인증(SaMD), HIPAA 준수, PACS 연동 등 추가 단계 필요 — 본 작품은 PoC</li>
+  </ul>
+</section>
+
+{% endblock %}

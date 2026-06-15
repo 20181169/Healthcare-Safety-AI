@@ -411,3 +411,8 @@ def quick_infer(request):
         "sr_applied_count": run["sr_applied_count"],
         "results": run["results"],
     })
+
+
+def about_view(request):
+    """포트폴리오용 기술 노트 — 비로그인도 열람 가능."""
+    return render(request, "safety/about.html")

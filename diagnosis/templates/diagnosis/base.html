@@ -32,6 +32,12 @@
                 {% if request.path == u_history %}bg-brand-600 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
         진단 이력
       </a>
+      {% url 'diagnosis:about' as u_about %}
+      <a href="{{ u_about }}"
+         class="px-3 py-1.5 rounded-md transition
+                {% if request.path == u_about %}bg-brand-600 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+        📊 기술 노트
+      </a>
     </nav>
   </div>
 </div>

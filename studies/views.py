@@ -168,3 +168,8 @@ def study_report(request, pk):
     diagnosis = getattr(study, "diagnosis", None)
     return render(request, "studies/report.html",
                   {"study": study, "diagnosis": diagnosis})
+
+
+def study_about(request):
+    """포트폴리오용 기술 노트 — 비로그인도 열람 가능."""
+    return render(request, "studies/about.html")

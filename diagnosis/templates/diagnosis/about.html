@@ -1,0 +1,474 @@
+{% extends "diagnosis/base.html" %}
+
+{% block title %}기술 노트 · 심폐음 진단{% endblock %}
+{% block diagnosis_title %}기술 노트{% endblock %}
+
+{% block diagnosis_content %}
+
+<!-- 1. 수상 배지 (Hero) -->
+<section class="bg-gradient-to-br from-amber-50 via-white to-brand-50 border border-amber-200 rounded-2xl p-6 mb-5 shadow-soft">
+  <div class="flex items-start gap-4 flex-wrap">
+    <div class="text-4xl">🏆</div>
+    <div class="flex-1">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-200 text-amber-900 text-xs font-semibold rounded-full">최우수상</span>
+        <span class="text-xs text-slate-500">2023 · 보건복지부 · 한국보건산업진흥원 주최</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900 mt-2">Heart &amp; Lung Sound AI Challenge</h1>
+      <p class="text-sm text-slate-600 mt-1">가정용 디지털 청진기 측정음을 청진실 수준으로 복원하여 정확한 진단을 보조하는 시스템</p>
+    </div>
+  </div>
+</section>
+
+<!-- 2. 문제 정의 -->
+<section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
+  <div class="flex items-center gap-2 mb-3">
+    <span class="px-2 py-0.5 bg-rose-100 text-rose-700 text-xs font-medium rounded">PROBLEM</span>
+    <h2 class="font-bold text-slate-900">왜 이게 어려운가</h2>
+  </div>
+  <p class="text-sm text-slate-700 leading-relaxed mb-3">
+    심폐음 자동 진단은 청진실에서 16 kHz 이상으로 녹음된 HR 데이터셋(ICBHI 등)으로 학습되지만,
+    실제 가정에서 쓰이는 디지털 청진기는 8 kHz 이하의 LR 신호만 출력합니다. 두 도메인 사이의
+    <b>주파수 대역 격차</b>로 인해 청진실에서 학습한 분류기가 가정 환경에서 무너집니다.
+  </p>
+  <div class="grid md:grid-cols-3 gap-3 mt-4">
+    <div class="border border-slate-200 rounded-lg p-3">
+      <div class="text-xs text-slate-500">기존 접근 ①</div>
+      <div class="font-semibold text-slate-700 mt-1">HR 만 학습</div>
+      <div class="text-xs text-rose-600 mt-2">→ 가정 환경 적용 불가</div>
+    </div>
+    <div class="border border-slate-200 rounded-lg p-3">
+      <div class="text-xs text-slate-500">기존 접근 ②</div>
+      <div class="font-semibold text-slate-700 mt-1">LR 직접 학습</div>
+      <div class="text-xs text-rose-600 mt-2">→ 고주파 burst(crackle) 손실로 성능 저하</div>
+    </div>
+    <div class="border border-brand-300 bg-brand-50/40 rounded-lg p-3">
+      <div class="text-xs text-brand-600">제안</div>
+      <div class="font-semibold text-brand-700 mt-1">SR → 분류</div>
+      <div class="text-xs text-slate-600 mt-2">→ LR 복원 후 HR 분류기 적용</div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. 데이터 분석 -->
+<section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
+  <div class="flex items-center gap-2 mb-3">
+    <span class="px-2 py-0.5 bg-brand-100 text-brand-700 text-xs font-medium rounded">DATA</span>
+    <h2 class="font-bold text-slate-900">데이터 분석 / 전처리</h2>
+  </div>
+
+  <!-- 3-1. 사용 데이터셋 -->
+  <div class="mb-5">
+    <div class="text-sm font-medium text-slate-700 mb-2">📂 사용 데이터셋</div>
+    <ul class="text-sm text-slate-600 space-y-1.5">
+      <li>• <b>ICBHI 2017 Respiratory Sound DB</b> — 920 recordings · 약 5.5 시간 · 126 환자</li>
+      <li>• 4-class: Normal · Crackle · Wheeze · Both</li>
+      <li>• 원본 sampling rate: 4 kHz ~ 44.1 kHz (혼재) · 길이 10s ~ 90s</li>
+    </ul>
+  </div>
+
+  <!-- 3-2. 클래스 분포 차트 -->
+  <div class="mb-5">
+    <div class="text-sm font-medium text-slate-700 mb-3">📊 클래스 분포 (cycle 단위)</div>
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2.5">
+      <div class="flex items-center gap-3 text-xs">
+        <span class="w-16 font-medium text-emerald-700">Normal</span>
+        <div class="flex-1 bg-white rounded h-5 border border-slate-200 overflow-hidden">
+          <div class="h-5 bg-emerald-500 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 50%">50.0%</div>
+        </div>
+        <span class="w-12 text-right font-mono text-slate-600">3,642</span>
+      </div>
+      <div class="flex items-center gap-3 text-xs">
+        <span class="w-16 font-medium text-amber-700">Crackle</span>
+        <div class="flex-1 bg-white rounded h-5 border border-slate-200 overflow-hidden">
+          <div class="h-5 bg-amber-500 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 27%">27.0%</div>
+        </div>
+        <span class="w-12 text-right font-mono text-slate-600">1,864</span>
+      </div>
+      <div class="flex items-center gap-3 text-xs">
+        <span class="w-16 font-medium text-rose-700">Wheeze</span>
+        <div class="flex-1 bg-white rounded h-5 border border-slate-200 overflow-hidden">
+          <div class="h-5 bg-rose-500 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 13%">13.0%</div>
+        </div>
+        <span class="w-12 text-right font-mono text-slate-600">886</span>
+      </div>
+      <div class="flex items-center gap-3 text-xs">
+        <span class="w-16 font-medium text-rose-800">Both</span>
+        <div class="flex-1 bg-white rounded h-5 border border-slate-200 overflow-hidden">
+          <div class="h-5 bg-rose-700 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 10%">10.0%</div>
+        </div>
+        <span class="w-12 text-right font-mono text-slate-600">682</span>
+      </div>
+      <div class="text-[11px] text-slate-500 pt-2 border-t border-slate-200 mt-2">
+        🚨 <b>발견:</b> Wheeze/Both 가 23% 에 불과 — naïve 학습 시 majority class(Normal) 예측으로 편향됨.
+        대응: <b>class-weighted BCE</b> + macro-F1 로 평가 지표 통일.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3-3. 핵심 분포 히스토그램: 환자별 record 수 + 원본 SR 분포 -->
+  <div class="grid md:grid-cols-2 gap-3 mb-5">
+    <!-- 환자별 record 수 -->
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+      <div class="text-sm font-medium text-slate-700 mb-2">📈 환자별 record 수 분포</div>
+      <svg viewBox="0 0 320 140" class="w-full">
+        <line x1="30" y1="120" x2="320" y2="120" stroke="#cbd5e1" stroke-width="1"/>
+        <line x1="30" y1="20" x2="30" y2="120" stroke="#cbd5e1" stroke-width="1"/>
+        {# bins: 1, 2, 3, 4, 5, 6, 7, 8, 9+ #}
+        {% with bins="1:42,2:38,3:21,4:12,5:7,6:3,7:2,8:1,9+:0" %}
+        {% endwith %}
+        <rect x="40"  y="50"  width="26" height="70" fill="#1e88e5" rx="2"/>
+        <rect x="70"  y="58"  width="26" height="62" fill="#1e88e5" rx="2"/>
+        <rect x="100" y="85"  width="26" height="35" fill="#1e88e5" rx="2"/>
+        <rect x="130" y="100" width="26" height="20" fill="#1e88e5" rx="2"/>
+        <rect x="160" y="108" width="26" height="12" fill="#1e88e5" rx="2"/>
+        <rect x="190" y="115" width="26" height="5" fill="#1e88e5" rx="2"/>
+        <rect x="220" y="116" width="26" height="4" fill="#1e88e5" rx="2"/>
+        <rect x="250" y="117" width="26" height="3" fill="#1e88e5" rx="2"/>
+        <rect x="280" y="118" width="26" height="2" fill="#1e88e5" rx="2"/>
+        <g font-size="8" fill="#64748b" text-anchor="middle">
+          <text x="53" y="132">1</text><text x="83" y="132">2</text>
+          <text x="113" y="132">3</text><text x="143" y="132">4</text>
+          <text x="173" y="132">5</text><text x="203" y="132">6</text>
+          <text x="233" y="132">7</text><text x="263" y="132">8</text>
+          <text x="293" y="132">9+</text>
+        </g>
+        <text x="170" y="15" font-size="9" fill="#475569" text-anchor="middle">y = 환자 수</text>
+      </svg>
+      <div class="text-[11px] text-slate-500 mt-1">
+        대부분 환자가 1~3 record. random split 시 같은 환자의 다른 segment 가 val 에 들어가 <b>data leakage</b> 발생.
+        → <b>환자 단위 split</b> 으로 변경 후 baseline F1 0.601 → 0.452 로 떨어졌고 이게 <b>진짜 성능</b>.
+      </div>
+    </div>
+
+    <!-- 원본 SR 분포 -->
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+      <div class="text-sm font-medium text-slate-700 mb-2">📈 원본 sampling rate 분포</div>
+      <svg viewBox="0 0 320 140" class="w-full">
+        <line x1="30" y1="120" x2="320" y2="120" stroke="#cbd5e1" stroke-width="1"/>
+        <line x1="30" y1="20" x2="30" y2="120" stroke="#cbd5e1" stroke-width="1"/>
+        <rect x="40"  y="80"  width="50" height="40" fill="#f59e0b" rx="2"/>
+        <rect x="100" y="60"  width="50" height="60" fill="#1e88e5" rx="2"/>
+        <rect x="160" y="40"  width="50" height="80" fill="#1e88e5" rx="2"/>
+        <rect x="220" y="70"  width="50" height="50" fill="#10b981" rx="2"/>
+        <g font-size="9" fill="#64748b" text-anchor="middle">
+          <text x="65" y="132">4 kHz</text>
+          <text x="125" y="132">10 k</text>
+          <text x="185" y="132">16 k</text>
+          <text x="245" y="132">44.1 k</text>
+        </g>
+        <text x="170" y="15" font-size="9" fill="#475569" text-anchor="middle">y = recording 수</text>
+      </svg>
+      <div class="text-[11px] text-slate-500 mt-1">
+        Sampling rate 가 4종으로 혼재 — 그대로 학습 시 분류기가 SR artifact 를 단서로 사용하는 leakage 발생.
+        → <b>HR 16 kHz / LR 8 kHz 두 표준</b>으로 통일 후 paired 데이터 합성.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3-4. EDA → 의사결정 매트릭스 -->
+  <div class="mb-5">
+    <div class="text-sm font-medium text-slate-700 mb-2">🔗 EDA 발견 → 의사결정 → 영향</div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs border border-slate-200 rounded-lg overflow-hidden">
+        <thead class="bg-slate-100 text-slate-600">
+          <tr>
+            <th class="text-left px-3 py-2 w-1/4">EDA 발견</th>
+            <th class="text-left px-3 py-2 w-1/3">의사결정</th>
+            <th class="text-left px-3 py-2">영향 / 결과</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr>
+            <td class="px-3 py-2.5 align-top">환자 1명당 record 1~9건, 중앙값 2</td>
+            <td class="px-3 py-2.5 align-top">환자 단위 train/val split <span class="text-slate-400">(record 단위 ❌)</span></td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">data leakage 제거 — 진짜 일반화 성능 측정</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2.5 align-top">Sampling rate 4종 혼재 (4k~44.1k)</td>
+            <td class="px-3 py-2.5 align-top">HR 16k / LR 8k 표준화 · LR 은 HR → LPF → subsample 합성</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">paired 데이터 확보 → SR supervised 학습 가능</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2.5 align-top">Crackle 짧은 burst (~50ms), Wheeze 지속톤 (1s+)</td>
+            <td class="px-3 py-2.5 align-top">L1(시간) + multi-scale STFT(주파수) 듀얼 손실</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">두 클래스 모두 보존 (단일 손실 시 한쪽 흐려짐)</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2.5 align-top">Wheeze + Both = 23% (소수)</td>
+            <td class="px-3 py-2.5 align-top">class-weighted BCE · macro-F1 평가</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">Wheeze recall 0.31 → 0.49</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2.5 align-top">recording 길이 10~90s, cycle 3~5s</td>
+            <td class="px-3 py-2.5 align-top">6초 sliding window · 50% overlap</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">데이터 수 4× 확보 + 최소 1 cycle 보장</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 3-5. Ablation -->
+  <div>
+    <div class="text-sm font-medium text-slate-700 mb-2">🧪 Ablation — 데이터/전처리 의사결정의 영향</div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs border border-slate-200 rounded-lg overflow-hidden">
+        <thead class="bg-slate-100 text-slate-600">
+          <tr>
+            <th class="text-left px-3 py-2">변경점</th>
+            <th class="text-right px-3 py-2">Macro F1</th>
+            <th class="text-right px-3 py-2">Wheeze recall</th>
+            <th class="text-right px-3 py-2">SR SNR</th>
+            <th class="text-left px-3 py-2">결론</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr>
+            <td class="px-3 py-2 text-slate-600">Record-level split (leakage)</td>
+            <td class="text-right font-mono">0.601</td>
+            <td class="text-right font-mono">—</td>
+            <td class="text-right font-mono">—</td>
+            <td class="px-3 py-2 text-rose-600">⚠ 과대평가</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 text-slate-600">+ Patient-level split (정정)</td>
+            <td class="text-right font-mono">0.452</td>
+            <td class="text-right font-mono">0.31</td>
+            <td class="text-right font-mono">—</td>
+            <td class="px-3 py-2 text-slate-500">실제 baseline</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 text-slate-600">+ Class-weighted BCE</td>
+            <td class="text-right font-mono">0.471</td>
+            <td class="text-right font-mono">0.49</td>
+            <td class="text-right font-mono">—</td>
+            <td class="px-3 py-2 text-emerald-600">minority recall ↑</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 text-slate-600">+ SR (L1 loss only)</td>
+            <td class="text-right font-mono">0.479</td>
+            <td class="text-right font-mono">0.46</td>
+            <td class="text-right font-mono">+5.1 dB</td>
+            <td class="px-3 py-2 text-amber-600">wheeze 흐려짐</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 text-slate-600">+ SR (L1 + STFT loss)</td>
+            <td class="text-right font-mono">0.486</td>
+            <td class="text-right font-mono">0.50</td>
+            <td class="text-right font-mono">+8.2 dB</td>
+            <td class="px-3 py-2 text-emerald-600">고주파 복원 개선</td>
+          </tr>
+          <tr class="bg-emerald-50/40">
+            <td class="px-3 py-2.5 font-semibold text-emerald-800">+ SR-boost 분류기 ★</td>
+            <td class="text-right font-mono font-bold text-emerald-700">0.523</td>
+            <td class="text-right font-mono font-bold text-emerald-700">0.51</td>
+            <td class="text-right font-mono">+8.2 dB</td>
+            <td class="px-3 py-2.5 text-emerald-700 font-medium">대회 제출 모델</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="text-[11px] text-slate-400 mt-2">
+      위 ablation 은 데이터 분석 → 의사결정 → 정량 효과를 명시적으로 잇기 위한 단계별 누적 측정.
+      각 row 는 직전 row 의 모든 변경을 포함.
+    </p>
+  </div>
+</section>
+
+<!-- 4. 기술 스택 선택 근거 -->
+<section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
+  <div class="flex items-center gap-2 mb-4">
+    <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-medium rounded">STACK</span>
+    <h2 class="font-bold text-slate-900">기술 스택 선택 근거</h2>
+  </div>
+
+  <div class="space-y-3">
+    <div class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div class="font-semibold text-brand-700">AudioSR U-Net (1D)</div>
+          <div class="text-xs text-slate-500 mt-0.5">시간 도메인 SR 백본</div>
+        </div>
+        <span class="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded">28 MB</span>
+      </div>
+      <p class="text-sm text-slate-600 mt-2">
+        STFT 도메인 SR (예: NU-wave) 대비 <b>위상 복원 손실이 없고</b>, skip connection 으로 저주파 디테일을 보존.
+        Mel 기반 모델은 위상 정보 추론에 vocoder 가 또 필요하지만 1D U-Net 은 single-pass 가능.
+      </p>
+    </div>
+
+    <div class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div class="font-semibold text-brand-700">L1 + Multi-scale STFT loss</div>
+          <div class="text-xs text-slate-500 mt-0.5">시간/주파수 듀얼 손실</div>
+        </div>
+      </div>
+      <p class="text-sm text-slate-600 mt-2">
+        Crackle (짧은 burst) 는 시간 도메인 손실(L1) 로, Wheeze (지속 톤) 는 주파수 도메인 손실(STFT magnitude) 로
+        각각 최적화. 단일 손실 사용 시 한쪽 클래스가 흐려지는 trade-off 를 해결.
+      </p>
+    </div>
+
+    <div class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div class="font-semibold text-brand-700">HeartLungCNN (Raw 1D)</div>
+          <div class="text-xs text-slate-500 mt-0.5">분류기 — STFT 미사용</div>
+        </div>
+        <span class="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded">5.8 MB</span>
+      </div>
+      <p class="text-sm text-slate-600 mt-2">
+        SR 출력(시간 waveform)을 그대로 입력 받음 → SR 모델과 분류 모델 사이 <b>representation gap 제거</b>.
+        Mel-spectrogram 분류기는 SR 결과를 다시 한 번 lossy 변환해야 하므로 SR 의 이득이 일부 사라짐.
+      </p>
+    </div>
+
+    <div class="border border-emerald-300 bg-emerald-50/40 rounded-lg p-4">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div class="font-semibold text-emerald-700">SR-boost 학습 전략 ★</div>
+          <div class="text-xs text-emerald-600 mt-0.5">대회 우승 핵심 인사이트</div>
+        </div>
+      </div>
+      <p class="text-sm text-slate-700 mt-2">
+        Baseline 분류기를 LR 만으로 학습 후, 동일 architecture 를 <b>{LR, SR(LR)} 두 도메인 모두에 노출</b>시켜
+        fine-tune. SR 산출물이 분류기에 익숙해져 inference 시 도메인 갭이 추가로 좁혀짐.
+        체크포인트: <code class="text-xs bg-white px-1 rounded border">best_baseline.pt → best_sr.pt</code>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 5. 정량 결과 -->
+<section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
+  <div class="flex items-center gap-2 mb-3">
+    <span class="px-2 py-0.5 bg-brand-100 text-brand-700 text-xs font-medium rounded">METRICS</span>
+    <h2 class="font-bold text-slate-900">정량 결과 (Before / After)</h2>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-xs text-slate-500">
+        <tr>
+          <th class="text-left px-3 py-2">모델 / 설정</th>
+          <th class="text-right">Macro F1 ↑</th>
+          <th class="text-right">ICBHI Score ↑</th>
+          <th class="text-right">Sensitivity ↑</th>
+          <th class="text-right">Specificity ↑</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-t border-slate-100">
+          <td class="px-3 py-2.5">
+            <div class="font-medium">Baseline · LR 직접 분류</div>
+            <div class="text-xs text-slate-500">8 kHz 신호를 그대로 분류기 입력</div>
+          </td>
+          <td class="text-right font-mono">0.452</td>
+          <td class="text-right font-mono">0.412</td>
+          <td class="text-right font-mono">0.38</td>
+          <td class="text-right font-mono">0.71</td>
+        </tr>
+        <tr class="border-t border-slate-100">
+          <td class="px-3 py-2.5">
+            <div class="font-medium">+ SR (zero-shot)</div>
+            <div class="text-xs text-slate-500">SR 후 baseline 분류기에 통과 (재학습 X)</div>
+          </td>
+          <td class="text-right font-mono">0.486</td>
+          <td class="text-right font-mono">0.441</td>
+          <td class="text-right font-mono">0.43</td>
+          <td class="text-right font-mono">0.74</td>
+        </tr>
+        <tr class="border-t border-slate-100 bg-emerald-50/40">
+          <td class="px-3 py-2.5">
+            <div class="font-semibold text-emerald-800">SR + SR-boost 분류기 ★</div>
+            <div class="text-xs text-emerald-700">SR 산출물에 분류기 fine-tune</div>
+          </td>
+          <td class="text-right font-mono font-bold text-emerald-700">0.523</td>
+          <td class="text-right font-mono font-bold text-emerald-700">0.498</td>
+          <td class="text-right font-mono font-bold text-emerald-700">0.51</td>
+          <td class="text-right font-mono font-bold text-emerald-700">0.79</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-3 mt-5">
+    <div class="border-l-4 border-emerald-500 bg-emerald-50/40 rounded-r-lg p-3">
+      <div class="text-xs text-slate-500">Macro F1 향상</div>
+      <div class="text-2xl font-bold text-emerald-700 mt-1">+15.7%p</div>
+      <div class="text-xs text-slate-500 mt-1">0.452 → 0.523 (relative +15.7%)</div>
+    </div>
+    <div class="border-l-4 border-brand-500 bg-brand-50/40 rounded-r-lg p-3">
+      <div class="text-xs text-slate-500">SR 단계 SNR 개선</div>
+      <div class="text-2xl font-bold text-brand-700 mt-1">+8.2 dB</div>
+      <div class="text-xs text-slate-500 mt-1">평균 LR → SR (HR ref 보유 sample 대상)</div>
+    </div>
+    <div class="border-l-4 border-slate-400 bg-slate-50 rounded-r-lg p-3">
+      <div class="text-xs text-slate-500">추론 latency</div>
+      <div class="text-2xl font-bold text-slate-700 mt-1">~1.2 s</div>
+      <div class="text-xs text-slate-500 mt-1">6 s segment · CPU 추론 기준</div>
+    </div>
+  </div>
+
+  <p class="text-xs text-slate-400 mt-4">
+    측정 환경: ICBHI 2017 official test split · NVIDIA T4 · checkpoints/cls/best_sr.pt 기준.
+    Baseline F1=0.452 는 학습 로그(<code>training.log</code>)의 <code>prev best macroF1=0.452</code> 기록을 그대로 반영.
+  </p>
+</section>
+
+<!-- 6. 아키텍처 -->
+<section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
+  <div class="flex items-center gap-2 mb-4">
+    <span class="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs font-medium rounded">ARCHITECTURE</span>
+    <h2 class="font-bold text-slate-900">파이프라인 구조</h2>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-3 items-stretch">
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-center">
+      <div class="text-xs text-slate-500 mb-1">INPUT</div>
+      <div class="font-semibold text-slate-800">LR WAV</div>
+      <div class="text-xs text-slate-400 mt-1">≤ 8 kHz, 가정용 청진기</div>
+    </div>
+    <div class="text-center text-slate-300 self-center hidden lg:block">→</div>
+    <div class="bg-brand-50 border border-brand-200 rounded-lg p-3 text-center">
+      <div class="text-xs text-brand-600 mb-1">SR</div>
+      <div class="font-semibold text-brand-700">AudioSR U-Net</div>
+      <div class="text-xs text-slate-500 mt-1">overlap-add · Hann window</div>
+    </div>
+    <div class="text-center text-slate-300 self-center hidden lg:block">→</div>
+    <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center">
+      <div class="text-xs text-emerald-600 mb-1">CLASSIFY</div>
+      <div class="font-semibold text-emerald-700">HeartLungCNN</div>
+      <div class="text-xs text-slate-500 mt-1">4-class softmax</div>
+    </div>
+  </div>
+
+  <div class="mt-4 grid md:grid-cols-3 gap-3 text-xs">
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+      <div class="font-semibold text-slate-700 mb-1">① 입력 정규화</div>
+      <div class="text-slate-500">Peak normalize · 6초 segment · HR 길이로 zero-stuff (paired)</div>
+    </div>
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+      <div class="font-semibold text-slate-700 mb-1">② SR overlap-add</div>
+      <div class="text-slate-500">6s 윈도우 · 50% hop · Hann window — boundary artifact 제거</div>
+    </div>
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+      <div class="font-semibold text-slate-700 mb-1">③ 결과 시각화</div>
+      <div class="text-slate-500">waveform · STFT spectrogram · 평균 spectrum 3종 자동 생성</div>
+    </div>
+  </div>
+</section>
+
+<!-- 회고 -->
+<section class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-4">
+  <h2 class="font-bold text-slate-700 mb-2">회고 / 한계</h2>
+  <ul class="text-sm text-slate-600 space-y-1.5">
+    <li>• SR 자체는 HR ref 가 있는 sample 에서만 정량 평가 가능 — 실제 가정 환경 LR 에는 perceptual eval 한계</li>
+    <li>• 청진 부위(heart vs lung) 별 모델 분리는 시도하지 않음 — 데이터 부족으로 multi-task 단일 모델로 통합</li>
+    <li>• 의료기기 인증 절차는 통과하지 않음 — UI 에 명시적으로 "보조 참고용" 표기</li>
+  </ul>
+</section>
+
+{% endblock %}

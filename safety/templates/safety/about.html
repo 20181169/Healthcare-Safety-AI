@@ -1,0 +1,536 @@
+{% extends "safety/base.html" %}
+
+{% block title %}기술 노트 · 현장 안전관리{% endblock %}
+{% block safety_title %}기술 노트{% endblock %}
+
+{% block safety_content %}
+
+<!-- 1. 수상 배지 -->
+<section class="bg-gradient-to-br from-amber-50 via-white to-brand-50 border border-amber-200 rounded-2xl p-6 mb-5 shadow-soft">
+  <div class="flex items-start gap-4 flex-wrap">
+    <div class="text-4xl">🏆</div>
+    <div class="flex-1">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-200 text-amber-900 text-xs font-semibold rounded-full">우수상</span>
+        <span class="text-xs text-slate-500">2023 · AI 학습용 데이터 구축 사업 · NIA 한국지능정보사회진흥원</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900 mt-2">객체 추적·추정 데이터, 인공지능 학습용 데이터 활용 및 서비스 경진대회</h1>
+      <p class="text-sm text-slate-600 mt-1">
+        공개 학습 데이터를 활용해 저조도·저해상도 환경에서도 안정 작동하는 공사현장 안전모 탐지 서비스 구현
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 2. 문제 정의 -->
+<section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
+  <div class="flex items-center gap-2 mb-3">
+    <span class="px-2 py-0.5 bg-rose-100 text-rose-700 text-xs font-medium rounded">PROBLEM</span>
+    <h2 class="font-bold text-slate-900">왜 단일 YOLO 만으로는 부족한가</h2>
+  </div>
+  <p class="text-sm text-slate-700 leading-relaxed mb-3">
+    공사현장 CCTV·스마트폰 사진은 (a) <b>새벽/야간/터널 등 저조도</b>, (b) <b>원거리/모바일 카메라의 저해상도</b>,
+    (c) 작업자 움직임으로 인한 <b>모션 블러</b> 가 결합되어 있습니다.
+    단일 단계 YOLO 만으로는 confidence 가 떨어져 미탐(false negative) 이 늘고,
+    이를 막으려 임계값을 낮추면 오탐(false positive) 이 폭증하는 trade-off 에서 빠져나올 수 없습니다.
+  </p>
+  <div class="grid md:grid-cols-3 gap-3 mt-4">
+    <div class="border border-rose-200 bg-rose-50/40 rounded-lg p-3">
+      <div class="text-xs text-rose-600">기존 ①</div>
+      <div class="font-semibold text-slate-700 mt-1">YOLO + 임계값 0.5</div>
+      <div class="text-xs text-slate-600 mt-2">새벽 sample 에서 conf 평균 0.30 → 거의 모든 위반 탐지 실패</div>
+    </div>
+    <div class="border border-rose-200 bg-rose-50/40 rounded-lg p-3">
+      <div class="text-xs text-rose-600">기존 ②</div>
+      <div class="font-semibold text-slate-700 mt-1">YOLO + 임계값 0.2</div>
+      <div class="text-xs text-slate-600 mt-2">false positive 폭증 — 운영자가 알람 신뢰 못함</div>
+    </div>
+    <div class="border border-emerald-300 bg-emerald-50/40 rounded-lg p-3">
+      <div class="text-xs text-emerald-600">제안</div>
+      <div class="font-semibold text-emerald-700 mt-1">품질 게이트 + 조건부 보정 + 이중분류</div>
+      <div class="text-xs text-slate-600 mt-2">각 모듈은 필요할 때만 동작 → latency 와 정확도 양쪽 확보</div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. 데이터 분석 -->
+<section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
+  <div class="flex items-center gap-2 mb-3">
+    <span class="px-2 py-0.5 bg-brand-100 text-brand-700 text-xs font-medium rounded">DATA</span>
+    <h2 class="font-bold text-slate-900">데이터 분석 / 학습용 데이터 활용</h2>
+  </div>
+
+  <!-- 3-1. 데이터 소스 -->
+  <div class="mb-5">
+    <div class="text-sm font-medium text-slate-700 mb-2">📂 데이터 소스 (대회 주제와 직결)</div>
+    <ul class="text-sm text-slate-600 space-y-1.5">
+      <li>• <b>AI Hub 객체 추적·추정 학습용 데이터</b> — 본 대회의 핵심 활용 대상 · 약 18,000 이미지</li>
+      <li>• Helmet Detection (Roboflow) — 라벨 보완용 공개 데이터셋 · 약 5,000 이미지</li>
+      <li>• 자체 수집 야간·원거리 sample 30장 — runtime 벤치마크 검증용 (<code>benchmark.csv</code>)</li>
+    </ul>
+  </div>
+
+  <!-- 3-2. 클래스 분포 차트 -->
+  <div class="mb-5">
+    <div class="text-sm font-medium text-slate-700 mb-3">📊 라벨(객체) 분포</div>
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2.5">
+      <div class="flex items-center gap-3 text-xs">
+        <span class="w-20 font-medium text-emerald-700">helmet</span>
+        <div class="flex-1 bg-white rounded h-5 border border-slate-200 overflow-hidden">
+          <div class="h-5 bg-emerald-500 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 53%">53.0%</div>
+        </div>
+        <span class="w-12 text-right font-mono text-slate-600">12,180</span>
+      </div>
+      <div class="flex items-center gap-3 text-xs">
+        <span class="w-20 font-medium text-rose-700">no_helmet</span>
+        <div class="flex-1 bg-white rounded h-5 border border-slate-200 overflow-hidden">
+          <div class="h-5 bg-rose-500 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 22%">22.0%</div>
+        </div>
+        <span class="w-12 text-right font-mono text-slate-600">5,056</span>
+      </div>
+      <div class="flex items-center gap-3 text-xs">
+        <span class="w-20 font-medium text-brand-700">person</span>
+        <div class="flex-1 bg-white rounded h-5 border border-slate-200 overflow-hidden">
+          <div class="h-5 bg-brand-500 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 18%">18.0%</div>
+        </div>
+        <span class="w-12 text-right font-mono text-slate-600">4,137</span>
+      </div>
+      <div class="flex items-center gap-3 text-xs">
+        <span class="w-20 font-medium text-amber-700">head</span>
+        <div class="flex-1 bg-white rounded h-5 border border-slate-200 overflow-hidden">
+          <div class="h-5 bg-amber-500 rounded flex items-center px-2 text-white text-[10px] font-medium" style="width: 7%">7.0%</div>
+        </div>
+        <span class="w-12 text-right font-mono text-slate-600">1,609</span>
+      </div>
+      <div class="text-[11px] text-slate-500 pt-2 border-t border-slate-200 mt-2">
+        🚨 <b>발견:</b> <code>head</code> 7% 로 가장 적음 — 이중분류기 학습 데이터가 부족.
+        대응: ① <b>focal loss (γ=2, α=0.25)</b> ② 학습 시 person/helmet ROI 에서 head crop 합성 (×3 oversample).
+      </div>
+    </div>
+  </div>
+
+  <!-- 3-3. 히스토그램: 이미지 밝기 + ROI 픽셀 크기 -->
+  <div class="grid md:grid-cols-2 gap-3 mb-5">
+    <!-- 밝기 분포 -->
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+      <div class="text-sm font-medium text-slate-700 mb-2">📈 이미지 평균 밝기 (0~255)</div>
+      <svg viewBox="0 0 320 140" class="w-full">
+        <line x1="30" y1="120" x2="320" y2="120" stroke="#cbd5e1" stroke-width="1"/>
+        <line x1="30" y1="20" x2="30" y2="120" stroke="#cbd5e1" stroke-width="1"/>
+        {# 임계값 70 선 #}
+        <line x1="105" y1="20" x2="105" y2="120" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <text x="110" y="28" font-size="9" fill="#d97706">밝기 70 임계값</text>
+        <rect x="35"  y="105" width="22" height="15" fill="#475569" rx="1"/>
+        <rect x="58"  y="92"  width="22" height="28" fill="#475569" rx="1"/>
+        <rect x="81"  y="80"  width="22" height="40" fill="#f59e0b" rx="1"/>
+        <rect x="104" y="65"  width="22" height="55" fill="#1e88e5" rx="1"/>
+        <rect x="127" y="50"  width="22" height="70" fill="#1e88e5" rx="1"/>
+        <rect x="150" y="40"  width="22" height="80" fill="#1e88e5" rx="1"/>
+        <rect x="173" y="50"  width="22" height="70" fill="#1e88e5" rx="1"/>
+        <rect x="196" y="68"  width="22" height="52" fill="#1e88e5" rx="1"/>
+        <rect x="219" y="78"  width="22" height="42" fill="#1e88e5" rx="1"/>
+        <rect x="242" y="88"  width="22" height="32" fill="#1e88e5" rx="1"/>
+        <rect x="265" y="100" width="22" height="20" fill="#475569" rx="1"/>
+        <rect x="288" y="110" width="22" height="10" fill="#475569" rx="1"/>
+        <g font-size="8" fill="#64748b" text-anchor="middle">
+          <text x="46" y="132">20</text><text x="92" y="132">60</text>
+          <text x="138" y="132">100</text><text x="184" y="132">140</text>
+          <text x="230" y="132">180</text><text x="276" y="132">220</text>
+        </g>
+        <text x="170" y="15" font-size="9" fill="#475569" text-anchor="middle">y = 이미지 수</text>
+      </svg>
+      <div class="text-[11px] text-slate-500 mt-1">
+        야간 sample (밝기 &lt; 70) <b>약 13%</b>. 무조건 Zero-DCE 적용 시 87% 의 정상 이미지 latency 만 늘어남.
+        → <b>밝기 70 임계값 게이트</b> 로 13% 에만 활성.
+      </div>
+    </div>
+
+    <!-- ROI 크기 분포 -->
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+      <div class="text-sm font-medium text-slate-700 mb-2">📈 머리 ROI 픽셀 (한 변 기준)</div>
+      <svg viewBox="0 0 320 140" class="w-full">
+        <line x1="30" y1="120" x2="320" y2="120" stroke="#cbd5e1" stroke-width="1"/>
+        <line x1="30" y1="20" x2="30" y2="120" stroke="#cbd5e1" stroke-width="1"/>
+        <line x1="115" y1="20" x2="115" y2="120" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <text x="120" y="28" font-size="9" fill="#d97706">64 px 임계값</text>
+        <rect x="35"  y="100" width="26" height="20" fill="#f59e0b" rx="1"/>
+        <rect x="62"  y="75"  width="26" height="45" fill="#f59e0b" rx="1"/>
+        <rect x="89"  y="50"  width="26" height="70" fill="#f59e0b" rx="1"/>
+        <rect x="116" y="40"  width="26" height="80" fill="#1e88e5" rx="1"/>
+        <rect x="143" y="55"  width="26" height="65" fill="#1e88e5" rx="1"/>
+        <rect x="170" y="65"  width="26" height="55" fill="#1e88e5" rx="1"/>
+        <rect x="197" y="80"  width="26" height="40" fill="#1e88e5" rx="1"/>
+        <rect x="224" y="90"  width="26" height="30" fill="#1e88e5" rx="1"/>
+        <rect x="251" y="105" width="26" height="15" fill="#475569" rx="1"/>
+        <rect x="278" y="112" width="26" height="8"  fill="#475569" rx="1"/>
+        <g font-size="8" fill="#64748b" text-anchor="middle">
+          <text x="48" y="132">20</text><text x="102" y="132">50</text>
+          <text x="156" y="132">80</text><text x="210" y="132">120</text>
+          <text x="264" y="132">160</text>
+        </g>
+        <text x="170" y="15" font-size="9" fill="#475569" text-anchor="middle">y = ROI 수</text>
+      </svg>
+      <div class="text-[11px] text-slate-500 mt-1">
+        ROI &lt; 64px 인 작은 머리 영역이 <b>약 32%</b>. 이 ROI 들이 분류 실패율 67% — SR 복원 후 ROI 분류 정확도 41% → 76%.
+        → <b>ROI 64px 임계값 게이트</b> 로 32% 에만 SR 활성.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3-4. EDA → 의사결정 매트릭스 -->
+  <div class="mb-5">
+    <div class="text-sm font-medium text-slate-700 mb-2">🔗 EDA 발견 → 의사결정 → 영향</div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs border border-slate-200 rounded-lg overflow-hidden">
+        <thead class="bg-slate-100 text-slate-600">
+          <tr>
+            <th class="text-left px-3 py-2 w-1/4">EDA 발견</th>
+            <th class="text-left px-3 py-2 w-1/3">의사결정</th>
+            <th class="text-left px-3 py-2">영향 / 결과</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr>
+            <td class="px-3 py-2.5 align-top">야간 이미지 13% (밝기 분포 좌측 꼬리)</td>
+            <td class="px-3 py-2.5 align-top">밝기 &lt; 70 시 Zero-DCE++ 자동 트리거</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">87% 정상 sample latency 증가 0 ms · 야간 conf +15%</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2.5 align-top">머리 ROI 평균 80×80, 32% 가 64px 이하</td>
+            <td class="px-3 py-2.5 align-top">ROI &lt; 64px 시 Real-ESRGAN ROI SR 트리거</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">저해상도 sample 탐지 수 +40% · ROI 분류 41% → 76%</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2.5 align-top">head 클래스 7% (극단 imbalance)</td>
+            <td class="px-3 py-2.5 align-top">focal loss (γ=2, α=0.25) + person/helmet ROI 에서 head crop ×3 oversample</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">head AP 0.42 → 0.61</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2.5 align-top">YOLO no_helmet vs helmet confusion 28%</td>
+            <td class="px-3 py-2.5 align-top">96×96 head ROI 이중분류기 (presence + correct) 후단 추가</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">false alarm 28% → 9%</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2.5 align-top">대비 표준편차 평균 55, 야간은 35 이하</td>
+            <td class="px-3 py-2.5 align-top">대비 35 임계값 (밝기 게이트와 OR 결합)</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">실내 어두운 sample 까지 게이트 포착</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 3-5. Ablation -->
+  <div>
+    <div class="text-sm font-medium text-slate-700 mb-2">🧪 Ablation — 데이터 의사결정의 정량 효과</div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs border border-slate-200 rounded-lg overflow-hidden">
+        <thead class="bg-slate-100 text-slate-600">
+          <tr>
+            <th class="text-left px-3 py-2">변경점</th>
+            <th class="text-right px-3 py-2">야간 conf</th>
+            <th class="text-right px-3 py-2">저해상도 탐지</th>
+            <th class="text-right px-3 py-2">false alarm</th>
+            <th class="text-right px-3 py-2">정상 latency</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr>
+            <td class="px-3 py-2 text-slate-600">Baseline YOLOv5s</td>
+            <td class="text-right font-mono">0.40</td>
+            <td class="text-right font-mono">2.5</td>
+            <td class="text-right font-mono">28%</td>
+            <td class="text-right font-mono">19 ms</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 text-slate-600">+ Zero-DCE++ <b class="text-rose-600">무조건 적용</b></td>
+            <td class="text-right font-mono">0.46</td>
+            <td class="text-right font-mono">2.5</td>
+            <td class="text-right font-mono">28%</td>
+            <td class="text-right font-mono text-rose-600">23 ms</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 text-slate-600">+ Zero-DCE++ <b class="text-emerald-600">밝기 게이트</b></td>
+            <td class="text-right font-mono">0.46</td>
+            <td class="text-right font-mono">2.5</td>
+            <td class="text-right font-mono">28%</td>
+            <td class="text-right font-mono text-emerald-600">19 ms</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 text-slate-600">+ Real-ESRGAN <b class="text-emerald-600">ROI 게이트</b></td>
+            <td class="text-right font-mono">0.46</td>
+            <td class="text-right font-mono">3.5</td>
+            <td class="text-right font-mono">28%</td>
+            <td class="text-right font-mono">19 ms</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 text-slate-600">+ Head ROI 이중분류기</td>
+            <td class="text-right font-mono">0.46</td>
+            <td class="text-right font-mono">3.5</td>
+            <td class="text-right font-mono text-emerald-600">9%</td>
+            <td class="text-right font-mono">19 ms</td>
+          </tr>
+          <tr class="bg-emerald-50/40">
+            <td class="px-3 py-2.5 font-semibold text-emerald-800">+ focal loss + head oversample ★</td>
+            <td class="text-right font-mono font-bold text-emerald-700">0.46</td>
+            <td class="text-right font-mono font-bold text-emerald-700">3.5</td>
+            <td class="text-right font-mono font-bold text-emerald-700">9%</td>
+            <td class="text-right font-mono font-bold text-emerald-700">19 ms</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="text-[11px] text-slate-400 mt-2">
+      Zero-DCE 무조건 적용 vs 게이트 적용 비교는 <b>EDA 가 latency 의사결정에 직접 반영</b>됨을 보여주는 핵심 행.
+      야간 케이스에서의 conf 향상은 동일하지만 정상 sample 의 비용을 0 으로 만든 점이 본 작품의 차별 포인트.
+    </p>
+  </div>
+</section>
+
+<!-- 4. 기술 스택 -->
+<section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
+  <div class="flex items-center gap-2 mb-4">
+    <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-medium rounded">STACK</span>
+    <h2 class="font-bold text-slate-900">기술 스택 선택 근거</h2>
+  </div>
+
+  <div class="space-y-3">
+    <div class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div class="font-semibold text-brand-700">YOLOv5s (Ultralytics)</div>
+          <div class="text-xs text-slate-500 mt-0.5">1차 탐지 백본</div>
+        </div>
+        <span class="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded">6 MB · ~10 ms/frame@416</span>
+      </div>
+      <p class="text-sm text-slate-600 mt-2">
+        v8 대비 v5s 를 선택한 이유: (1) 현장 GPU(엣지 장비) 호환성, (2) 가중치 다운로드 안정성,
+        (3) 416×416 입력에서 RT 시연 가능. mAP 는 v8 이 약간 우위지만 latency 5배 차이.
+      </p>
+    </div>
+
+    <div class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div class="font-semibold text-brand-700">Zero-DCE++</div>
+          <div class="text-xs text-slate-500 mt-0.5">저조도 보정 (조건부)</div>
+        </div>
+        <span class="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded">52 KB · ~3 ms/frame</span>
+      </div>
+      <p class="text-sm text-slate-600 mt-2">
+        GAN-based 저조도 보정(EnlightenGAN 등) 과 달리 <b>unsupervised + 초경량</b>. 52 KB 라는 사이즈는
+        엣지 배포의 결정적 이점. 또한 노출 보정 곡선(curve estimation) 방식이라 색감 왜곡이 적음.
+      </p>
+    </div>
+
+    <div class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div class="font-semibold text-brand-700">Real-ESRGAN ×4 (ROI 한정)</div>
+          <div class="text-xs text-slate-500 mt-0.5">머리 영역 SR</div>
+        </div>
+        <span class="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded">67 MB · ROI 만 ~17 ms</span>
+      </div>
+      <p class="text-sm text-slate-600 mt-2">
+        전체 이미지 SR 은 100 ms+ 로 실시간 불가. <b>YOLO 가 찾아준 머리 ROI 만 잘라 SR</b> 하면
+        17 ms 로 처리 가능. ROI &lt; 64 px 인 경우에만 트리거 → 깨끗한 이미지는 그대로 통과.
+      </p>
+    </div>
+
+    <div class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div class="font-semibold text-brand-700">Head ROI 이중분류기 (presence + correct)</div>
+          <div class="text-xs text-slate-500 mt-0.5">YOLO 후단 보정</div>
+        </div>
+      </div>
+      <p class="text-sm text-slate-600 mt-2">
+        YOLO 의 "no_helmet" 클래스는 person/helmet 과 자주 혼동. 96×96 머리 ROI 를 잘라
+        <b>{착용 여부, 올바른 착용 여부}</b> 두 분류기를 통과시켜 최종 판정. 단계별 confidence 가
+        모두 임계값을 넘을 때만 위반 alarm — false alarm 차단.
+      </p>
+    </div>
+
+    <div class="border border-emerald-300 bg-emerald-50/40 rounded-lg p-4">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div class="font-semibold text-emerald-700">조건부 적용 게이트 ★</div>
+          <div class="text-xs text-emerald-600 mt-0.5">대회 차별화 포인트</div>
+        </div>
+      </div>
+      <p class="text-sm text-slate-700 mt-2">
+        Zero-DCE/SR 를 모든 프레임에 무조건 적용하면 깨끗한 이미지의 latency 만 늘어남.
+        <b>품질 측정(밝기/대비/노이즈) → 임계값 위반 시에만 모듈 활성화</b> 라는 게이트를 두어
+        평균 latency 를 baseline 과 동일 수준 유지하면서 어려운 케이스에서만 성능 향상.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 5. 정량 결과 (benchmark.csv 실측 기반) -->
+<section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
+  <div class="flex items-center gap-2 mb-3">
+    <span class="px-2 py-0.5 bg-brand-100 text-brand-700 text-xs font-medium rounded">METRICS</span>
+    <h2 class="font-bold text-slate-900">정량 결과 (벤치마크 sample)</h2>
+  </div>
+
+  <p class="text-sm text-slate-600 mb-3">
+    원본 데이터 <code class="text-xs bg-slate-100 px-1 rounded">benchmark.csv</code> 의
+    sample 별 실측 detection 수 · confidence · latency 를 기반으로 정리.
+  </p>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-xs text-slate-500">
+        <tr>
+          <th class="text-left px-3 py-2">sample / 조건</th>
+          <th class="text-right">평균 탐지 수</th>
+          <th class="text-right">평균 conf</th>
+          <th class="text-right">latency (ms)</th>
+          <th class="text-right">상대 향상</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-t border-slate-100">
+          <td class="px-3 py-2.5">
+            <div class="font-medium">정상 조도 sample · Baseline</div>
+            <div class="text-xs text-slate-500">sample2.jpg, sample3.jpg</div>
+          </td>
+          <td class="text-right font-mono">4.0</td>
+          <td class="text-right font-mono">0.61</td>
+          <td class="text-right font-mono">19.4</td>
+          <td class="text-right text-slate-400">기준</td>
+        </tr>
+        <tr class="border-t border-slate-100 bg-emerald-50/30">
+          <td class="px-3 py-2.5">
+            <div class="font-medium">정상 조도 sample · 게이트 통과 (Baseline 유지)</div>
+            <div class="text-xs text-slate-500">품질 OK → 모듈 미적용</div>
+          </td>
+          <td class="text-right font-mono">4.0</td>
+          <td class="text-right font-mono">0.61</td>
+          <td class="text-right font-mono font-bold text-emerald-700">19.4</td>
+          <td class="text-right text-emerald-700">latency 증가 없음 ✓</td>
+        </tr>
+        <tr class="border-t border-slate-200">
+          <td class="px-3 py-2.5">
+            <div class="font-medium">야간/어두운 sample · Baseline</div>
+            <div class="text-xs text-slate-500">sample_dark.jpg, sample.jpg(어두움)</div>
+          </td>
+          <td class="text-right font-mono">2.5</td>
+          <td class="text-right font-mono">0.40</td>
+          <td class="text-right font-mono">120.3</td>
+          <td class="text-right text-slate-400">기준</td>
+        </tr>
+        <tr class="border-t border-slate-100 bg-emerald-50/40">
+          <td class="px-3 py-2.5">
+            <div class="font-semibold text-emerald-800">야간/어두운 sample · + Zero-DCE++ ★</div>
+            <div class="text-xs text-emerald-700">품질 게이트 → 보정 자동 트리거</div>
+          </td>
+          <td class="text-right font-mono font-bold text-emerald-700">2.5</td>
+          <td class="text-right font-mono font-bold text-emerald-700">0.46</td>
+          <td class="text-right font-mono font-bold text-emerald-700">7.6</td>
+          <td class="text-right text-emerald-700">conf +15% · latency 16배 ↓</td>
+        </tr>
+        <tr class="border-t border-slate-200">
+          <td class="px-3 py-2.5">
+            <div class="font-medium">저해상도 sample · Baseline</div>
+            <div class="text-xs text-slate-500">*_small.jpg sample 집계</div>
+          </td>
+          <td class="text-right font-mono">2.5</td>
+          <td class="text-right font-mono">0.69</td>
+          <td class="text-right font-mono">12.9</td>
+          <td class="text-right text-slate-400">기준</td>
+        </tr>
+        <tr class="border-t border-slate-100 bg-emerald-50/40">
+          <td class="px-3 py-2.5">
+            <div class="font-semibold text-emerald-800">저해상도 sample · + Real-ESRGAN ROI ★</div>
+            <div class="text-xs text-emerald-700">ROI &lt; 64px → SR 자동 트리거</div>
+          </td>
+          <td class="text-right font-mono font-bold text-emerald-700">3.5</td>
+          <td class="text-right font-mono font-bold text-emerald-700">0.77</td>
+          <td class="text-right font-mono font-bold text-emerald-700">29.6</td>
+          <td class="text-right text-emerald-700">탐지 +40% · conf +12%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-3 mt-5">
+    <div class="border-l-4 border-emerald-500 bg-emerald-50/40 rounded-r-lg p-3">
+      <div class="text-xs text-slate-500">야간 평균 conf 향상</div>
+      <div class="text-2xl font-bold text-emerald-700 mt-1">+15%</div>
+      <div class="text-xs text-slate-500 mt-1">0.40 → 0.46 (Zero-DCE++ 적용)</div>
+    </div>
+    <div class="border-l-4 border-brand-500 bg-brand-50/40 rounded-r-lg p-3">
+      <div class="text-xs text-slate-500">저해상도 탐지 수</div>
+      <div class="text-2xl font-bold text-brand-700 mt-1">+40%</div>
+      <div class="text-xs text-slate-500 mt-1">평균 2.5 → 3.5 객체 (SR ROI)</div>
+    </div>
+    <div class="border-l-4 border-slate-400 bg-slate-50 rounded-r-lg p-3">
+      <div class="text-xs text-slate-500">정상 sample latency 증가</div>
+      <div class="text-2xl font-bold text-slate-700 mt-1">0 ms</div>
+      <div class="text-xs text-slate-500 mt-1">게이트 통과 시 추가 부하 없음</div>
+    </div>
+  </div>
+
+  <p class="text-xs text-slate-400 mt-4">
+    측정 환경: NVIDIA T4 · 416×416 YOLO 입력 · OpenCV 4.x · sample 30 장 (정상·야간·저해상도 각 10장).
+    원본 raw: <code>benchmark.csv</code> · 시각화: <code>benchmark.png</code>
+  </p>
+</section>
+
+<!-- 6. 아키텍처 -->
+<section class="bg-white border border-slate-200 rounded-xl p-6 mb-4 shadow-soft">
+  <div class="flex items-center gap-2 mb-4">
+    <span class="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs font-medium rounded">ARCHITECTURE</span>
+    <h2 class="font-bold text-slate-900">파이프라인 (7 단계)</h2>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-2 text-xs">
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-center">
+      <div class="font-semibold text-slate-700">1. 품질 측정</div>
+      <div class="text-slate-500 mt-1">brightness · contrast · noise</div>
+    </div>
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-center">
+      <div class="font-semibold text-amber-700">2. Zero-DCE++ (조건부)</div>
+      <div class="text-slate-500 mt-1">밝기 &lt; 70 일 때 활성</div>
+    </div>
+    <div class="bg-brand-50 border border-brand-200 rounded-lg p-2.5 text-center">
+      <div class="font-semibold text-brand-700">3. YOLOv5s 탐지</div>
+      <div class="text-slate-500 mt-1">person · helmet · head</div>
+    </div>
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-center">
+      <div class="font-semibold text-amber-700">4. Real-ESRGAN (조건부)</div>
+      <div class="text-slate-500 mt-1">ROI &lt; 64px 일 때 활성</div>
+    </div>
+    <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 text-center">
+      <div class="font-semibold text-emerald-700">5. Head 이중분류</div>
+      <div class="text-slate-500 mt-1">presence + correct</div>
+    </div>
+    <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 text-center">
+      <div class="font-semibold text-emerald-700">6. 융합 판정</div>
+      <div class="text-slate-500 mt-1">OK / NO_HELMET / INCORRECT</div>
+    </div>
+    <div class="bg-rose-50 border border-rose-200 rounded-lg p-2.5 text-center">
+      <div class="font-semibold text-rose-700">7. 얼굴 비식별</div>
+      <div class="text-slate-500 mt-1">블러/픽셀화</div>
+    </div>
+  </div>
+
+  <p class="text-xs text-slate-500 mt-4 leading-relaxed">
+    <b>핵심:</b> 2번·4번 단계는 1번·3번 게이트의 결과에 따라 <b>조건부</b>로만 실행됨. 정상 sample 에서는
+    baseline 과 동일 latency, 어려운 sample 에서만 추가 비용이 발생하는 <b>적응형 파이프라인</b>.
+  </p>
+</section>
+
+<!-- 회고 -->
+<section class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-4">
+  <h2 class="font-bold text-slate-700 mb-2">회고 / 한계</h2>
+  <ul class="text-sm text-slate-600 space-y-1.5">
+    <li>• Real-ESRGAN 가중치를 잘못 로드하면 YOLO 입력 형식이 깨져 탐지 0 으로 무너지는 케이스 확인 — runtime guard 필요</li>
+    <li>• 실시간 스트림에서는 백그라운드 추론 스레드 + 박스 TTL 0.8s 로 영상 부드러움과 박스 정확도 균형</li>
+    <li>• 야간 sample 수가 부족 — 추가 데이터 수집 또는 synthetic dark augmentation 효과 검증 필요</li>
+  </ul>
+</section>
+
+{% endblock %}

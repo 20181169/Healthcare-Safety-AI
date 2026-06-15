@@ -2,187 +2,213 @@
 {% block title %}대시보드 · 통합 헬스케어·안전 AI{% endblock %}
 {% block content %}
 
+<!-- 환영 헤더 (간결) -->
 <div class="mb-6">
   <div class="flex items-end justify-between flex-wrap gap-3">
     <div>
-      <div class="text-xs text-slate-500 mb-1">{{ user.role_kor }} · {{ user.affiliation|default:"통합 워크스페이스" }}</div>
+      <div class="text-xs text-slate-500 mb-1">{{ user.role_kor }}{% if user.affiliation %} · {{ user.affiliation }}{% endif %}</div>
       <h1 class="text-2xl font-bold text-slate-900">
         안녕하세요, {{ user.name }}<span class="text-slate-400 font-normal">님</span>
       </h1>
-      <p class="text-sm text-slate-500 mt-1">최근 7일간의 통합 활동 요약입니다.</p>
+      <p class="text-sm text-slate-500 mt-1">3개 수상 작품을 통합한 워크스페이스 — 각 시스템의 기술 노트와 라이브 데모.</p>
     </div>
-    <a href="{% url 'studies:new' %}"
-       class="inline-flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-soft">
-      + 새 X-ray 업로드
-    </a>
+    <div class="flex gap-2 text-xs">
+      <a href="{% url 'patients:list' %}" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600">환자</a>
+      <a href="{% url 'studies:list' %}" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600">검사</a>
+      <a href="{% url 'diagnosis:history' %}" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600">진단 이력</a>
+      <a href="{% url 'safety:history' %}" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600">탐지 이력</a>
+    </div>
   </div>
 </div>
 
-<!-- 3개 시스템 진입 카드 -->
-<div class="grid md:grid-cols-3 gap-3 mb-8">
-  <a href="{% url 'studies:list' %}"
-     class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between hover:border-brand-400 hover:shadow-md transition group shadow-soft">
-    <div>
-      <div class="text-xs text-slate-500">소아 X-ray 원격 판독</div>
-      <div class="font-semibold text-slate-800 mt-0.5">환자·검사 워크플로우</div>
-      <div class="text-xs text-slate-400 mt-2">
-        검사 {{ stats.studies_total }} · 환자 {{ stats.patients_total }}
+<!-- 3개 수상 작품 카드 (대형) -->
+<div class="grid lg:grid-cols-3 gap-5">
+
+  <!-- 1. 심폐음 (최우수상) -->
+  <article class="bg-white border border-slate-200 rounded-2xl shadow-soft hover:shadow-md transition overflow-hidden flex flex-col">
+    <!-- 헤더 -->
+    <div class="bg-gradient-to-br from-amber-50 via-amber-50/70 to-brand-50 px-6 pt-5 pb-5 border-b border-slate-100">
+      <div class="flex items-start justify-between mb-3">
+        <div>
+          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-200 text-amber-900 text-xs font-bold rounded-full">🏆 최우수상</span>
+          <div class="text-[11px] text-slate-500 mt-1.5">2023 · Heart &amp; Lung Sound AI Challenge</div>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-white shadow-soft grid place-items-center text-2xl">🫁</div>
       </div>
+      <h2 class="font-bold text-lg text-slate-900">심폐음 SR + 진단</h2>
+      <p class="text-xs text-slate-600 mt-1">Audio Super-Resolution 으로 가정용 청진음을 청진실 수준으로 복원</p>
     </div>
-    <span class="text-4xl group-hover:scale-110 transition-transform">🩻</span>
-  </a>
-  <a href="{% url 'diagnosis:upload' %}"
-     class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between hover:border-brand-400 hover:shadow-md transition group shadow-soft">
-    <div>
-      <div class="text-xs text-slate-500">심폐음 SR + 진단</div>
-      <div class="font-semibold text-slate-800 mt-0.5">측정본 업로드</div>
-      <div class="text-xs text-slate-400 mt-2">Audio Super-Resolution</div>
-    </div>
-    <span class="text-4xl group-hover:scale-110 transition-transform">🫁</span>
-  </a>
-  <a href="{% url 'safety:dashboard' %}"
-     class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between hover:border-brand-400 hover:shadow-md transition group shadow-soft">
-    <div>
-      <div class="text-xs text-slate-500">공사현장 안전관리</div>
-      <div class="font-semibold text-slate-800 mt-0.5">실시간/이미지 탐지</div>
-      <div class="text-xs text-slate-400 mt-2">YOLO + Zero-DCE + Real-ESRGAN</div>
-    </div>
-    <span class="text-4xl group-hover:scale-110 transition-transform">🦺</span>
-  </a>
-</div>
 
-<!-- X-ray 핵심 지표 -->
-<div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
-    <div class="text-xs text-slate-500">전체 환자</div>
-    <div class="text-2xl font-bold mt-1 text-slate-700">{{ stats.patients_total }}</div>
-  </div>
-  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
-    <div class="text-xs text-slate-500">전체 검사</div>
-    <div class="text-2xl font-bold mt-1 text-slate-700">{{ stats.studies_total }}</div>
-  </div>
-  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
-    <div class="text-xs text-slate-500">최근 7일 검사</div>
-    <div class="text-2xl font-bold mt-1 text-brand-600">{{ stats.studies_7d }}</div>
-  </div>
-  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
-    <div class="text-xs text-slate-500">전문의 검토 대기</div>
-    <div class="text-2xl font-bold mt-1 text-amber-600">{{ stats.pending_review }}</div>
-  </div>
-  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
-    <div class="text-xs text-slate-500">7일내 확정</div>
-    <div class="text-2xl font-bold mt-1 text-emerald-600">{{ stats.confirmed_7d }}</div>
-  </div>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-  <!-- 검토 대기열 -->
-  <div class="bg-white border border-slate-200 rounded-xl shadow-soft lg:col-span-2 overflow-hidden">
-    <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
-      <h2 class="font-semibold text-slate-800">전문의 검토 대기열</h2>
-      <a href="{% url 'studies:list' %}?status=ai_analyzed" class="text-xs text-brand-600 hover:underline">전체 →</a>
-    </div>
-    {% if review_queue %}
-      <table class="w-full text-sm">
-        <thead class="bg-slate-50 text-xs text-slate-500">
-          <tr>
-            <th class="text-left px-5 py-2">환자</th>
-            <th class="text-left">최상위 의심</th>
-            <th class="text-left">상태</th>
-            <th class="text-left pr-5">촬영시각</th>
-          </tr>
-        </thead>
-        <tbody>
-        {% for s in review_queue %}
-          <tr class="border-t border-slate-100 hover:bg-slate-50 transition">
-            <td class="px-5 py-2.5">
-              <a href="{% url 'studies:detail' pk=s.pk %}" class="text-brand-600 hover:underline font-medium">
-                {{ s.patient.name }}
-              </a>
-              <div class="text-xs text-slate-400 font-mono">{{ s.patient.patient_code }}</div>
-            </td>
-            <td>
-              {% if s.diagnosis %}
-                <span class="font-medium">{{ s.diagnosis.top_finding }}</span>
-                <span class="text-slate-400 text-xs ml-1">{{ s.diagnosis.top_prob|floatformat:3 }}</span>
-              {% else %}—{% endif %}
-            </td>
-            <td>
-              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-{{ s.status_color }}-100 text-{{ s.status_color }}-700">
-                {{ s.status_kor }}
-              </span>
-            </td>
-            <td class="text-xs text-slate-500 pr-5">{{ s.captured_at|date:"Y-m-d H:i" }}</td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <div class="text-center py-12">
-        <div class="text-3xl mb-1">✅</div>
-        <p class="text-sm text-slate-400">대기 중인 검사가 없습니다.</p>
+    <!-- 본문 -->
+    <div class="p-6 flex-1 flex flex-col">
+      <div class="text-xs text-slate-500 mb-2">핵심 정량 결과</div>
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
+          <div class="text-lg font-bold text-emerald-700">0.523</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">Macro F1</div>
+          <div class="text-[10px] text-emerald-600 font-medium">+15.7%p</div>
+        </div>
+        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
+          <div class="text-lg font-bold text-brand-700">+8.2</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">SNR (dB)</div>
+          <div class="text-[10px] text-brand-600 font-medium">SR 평균 개선</div>
+        </div>
+        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
+          <div class="text-lg font-bold text-slate-700">1.2 s</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">latency</div>
+          <div class="text-[10px] text-slate-400">CPU 추론</div>
+        </div>
       </div>
-    {% endif %}
-  </div>
 
-  <!-- 최근 30일 양성 소견 분포 -->
-  <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-soft">
-    <h2 class="font-semibold text-slate-800 mb-3">최근 30일 양성 소견</h2>
-    {% if finding_counts %}
-      {% with max_count=finding_counts.0.1 %}
-      <ul class="space-y-2">
-        {% for name, cnt in finding_counts %}
-        <li>
-          <div class="flex justify-between text-xs mb-1">
-            <span class="text-slate-700">{{ name }}</span>
-            <span class="text-slate-500 font-mono">{{ cnt }}건</span>
-          </div>
-          <div class="h-2 bg-slate-100 rounded">
-            <div class="h-2 bg-brand-500 rounded transition-all" style="width: {% widthratio cnt max_count 100 %}%"></div>
-          </div>
-        </li>
-        {% endfor %}
-      </ul>
-      {% endwith %}
-    {% else %}
-      <p class="text-sm text-slate-400 text-center py-10">데이터 없음</p>
-    {% endif %}
-  </div>
-
-  <!-- 내가 업로드한 최근 검사 -->
-  <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-soft lg:col-span-3">
-    <div class="flex items-center justify-between mb-3">
-      <h2 class="font-semibold text-slate-800">내가 업로드한 최근 검사</h2>
-      <a href="{% url 'studies:list' %}" class="text-xs text-brand-600 hover:underline">전체 →</a>
-    </div>
-    {% if my_studies %}
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {% for s in my_studies %}
-          <a href="{% url 'studies:detail' pk=s.pk %}"
-             class="border border-slate-200 rounded-lg p-3 hover:border-brand-400 hover:shadow-soft transition">
-            <div class="aspect-square bg-slate-100 rounded-md mb-2 overflow-hidden">
-              <img src="{{ s.image.url }}" class="w-full h-full object-cover" alt="">
-            </div>
-            <div class="text-sm font-medium truncate">{{ s.patient.name }}</div>
-            <div class="text-xs text-slate-500">{{ s.captured_at|date:"m-d H:i" }}</div>
-            <div class="mt-1">
-              <span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-{{ s.status_color }}-100 text-{{ s.status_color }}-700">
-                {{ s.status_kor }}
-              </span>
-            </div>
-          </a>
-        {% endfor %}
+      <div class="text-xs text-slate-500 mb-2">기술 스택</div>
+      <div class="flex flex-wrap gap-1.5 mb-5">
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">PyTorch</span>
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">1D U-Net</span>
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">STFT loss</span>
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">librosa</span>
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">ICBHI 2017</span>
       </div>
-    {% else %}
-      <div class="text-center py-12">
-        <div class="text-3xl mb-1">📸</div>
-        <p class="text-sm text-slate-400 mb-3">아직 업로드한 검사가 없습니다.</p>
-        <a href="{% url 'studies:new' %}"
-           class="inline-flex items-center gap-1 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
-          + 첫 X-ray 업로드
+
+      <div class="mt-auto grid grid-cols-2 gap-2">
+        <a href="{% url 'diagnosis:about' %}"
+           class="inline-flex items-center justify-center gap-1 border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition">
+          📊 기술 노트
+        </a>
+        <a href="{% url 'diagnosis:upload' %}"
+           class="inline-flex items-center justify-center gap-1 bg-brand-600 hover:bg-brand-700 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-soft transition">
+          ▶ 지금 데모
         </a>
       </div>
-    {% endif %}
+    </div>
+  </article>
+
+  <!-- 2. 현장 안전 (우수상) -->
+  <article class="bg-white border border-slate-200 rounded-2xl shadow-soft hover:shadow-md transition overflow-hidden flex flex-col">
+    <div class="bg-gradient-to-br from-amber-50 via-amber-50/70 to-brand-50 px-6 pt-5 pb-5 border-b border-slate-100">
+      <div class="flex items-start justify-between mb-3">
+        <div>
+          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-200 text-amber-900 text-xs font-bold rounded-full">🏆 우수상</span>
+          <div class="text-[11px] text-slate-500 mt-1.5 leading-snug">2023 · NIA<br>객체 추적·추정 데이터 활용 경진대회</div>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-white shadow-soft grid place-items-center text-2xl">🦺</div>
+      </div>
+      <h2 class="font-bold text-lg text-slate-900">공사현장 안전관리</h2>
+      <p class="text-xs text-slate-600 mt-1">저조도·저해상도에서도 안정적인 안전모 탐지 — 조건부 적용 파이프라인</p>
+    </div>
+
+    <div class="p-6 flex-1 flex flex-col">
+      <div class="text-xs text-slate-500 mb-2">핵심 정량 결과</div>
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
+          <div class="text-lg font-bold text-emerald-700">+15%</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">야간 conf</div>
+          <div class="text-[10px] text-emerald-600 font-medium">Zero-DCE++</div>
+        </div>
+        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
+          <div class="text-lg font-bold text-brand-700">+40%</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">SR 탐지</div>
+          <div class="text-[10px] text-brand-600 font-medium">Real-ESRGAN</div>
+        </div>
+        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
+          <div class="text-lg font-bold text-slate-700">~10</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">YOLO (ms)</div>
+          <div class="text-[10px] text-slate-400">416 입력</div>
+        </div>
+      </div>
+
+      <div class="text-xs text-slate-500 mb-2">기술 스택</div>
+      <div class="flex flex-wrap gap-1.5 mb-5">
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">YOLOv5s</span>
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">Zero-DCE++</span>
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">Real-ESRGAN</span>
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">OpenCV</span>
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">MJPEG stream</span>
+      </div>
+
+      <div class="mt-auto grid grid-cols-2 gap-2">
+        <a href="{% url 'safety:about' %}"
+           class="inline-flex items-center justify-center gap-1 border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition">
+          📊 기술 노트
+        </a>
+        <a href="{% url 'safety:upload' %}"
+           class="inline-flex items-center justify-center gap-1 bg-brand-600 hover:bg-brand-700 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-soft transition">
+          ▶ 지금 데모
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <!-- 3. 소아 X-ray (우수상) -->
+  <article class="bg-white border border-slate-200 rounded-2xl shadow-soft hover:shadow-md transition overflow-hidden flex flex-col">
+    <div class="bg-gradient-to-br from-amber-50 via-amber-50/70 to-brand-50 px-6 pt-5 pb-5 border-b border-slate-100">
+      <div class="flex items-start justify-between mb-3">
+        <div>
+          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-200 text-amber-900 text-xs font-bold rounded-full">🏆 우수상</span>
+          <div class="text-[11px] text-slate-500 mt-1.5 leading-snug">2022 · NIA<br>소아 엑스레이 서비스 아이디어 챌린지</div>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-white shadow-soft grid place-items-center text-2xl">🩻</div>
+      </div>
+      <h2 class="font-bold text-lg text-slate-900">소아 X-ray 원격 판독</h2>
+      <p class="text-xs text-slate-600 mt-1">응급실 → 영상의학 판독 지연을 AI 1차 분류 + 원격 확정으로 단축</p>
+    </div>
+
+    <div class="p-6 flex-1 flex flex-col">
+      <div class="text-xs text-slate-500 mb-2">핵심 정량 결과</div>
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
+          <div class="text-lg font-bold text-emerald-700">0.943</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">AUROC</div>
+          <div class="text-[10px] text-emerald-600 font-medium">+0.032</div>
+        </div>
+        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
+          <div class="text-lg font-bold text-brand-700">~100×</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">조치 단축</div>
+          <div class="text-[10px] text-brand-600 font-medium">120분 → 5초</div>
+        </div>
+        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
+          <div class="text-lg font-bold text-slate-700">800</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">latency (ms)</div>
+          <div class="text-[10px] text-slate-400">+ Grad-CAM</div>
+        </div>
+      </div>
+
+      <div class="text-xs text-slate-500 mb-2">기술 스택</div>
+      <div class="flex flex-wrap gap-1.5 mb-5">
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">DenseNet-121</span>
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">Multi-label BCE</span>
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">Grad-CAM</span>
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">Kermany PD</span>
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">RBAC 워크플로우</span>
+      </div>
+
+      <div class="mt-auto grid grid-cols-2 gap-2">
+        <a href="{% url 'studies:about' %}"
+           class="inline-flex items-center justify-center gap-1 border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition">
+          📊 기술 노트
+        </a>
+        <a href="{% url 'studies:new' %}"
+           class="inline-flex items-center justify-center gap-1 bg-brand-600 hover:bg-brand-700 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-soft transition">
+          ▶ 지금 데모
+        </a>
+      </div>
+    </div>
+  </article>
+</div>
+
+<!-- 통합 환경 한 줄 가치 -->
+<div class="mt-8 bg-white border border-slate-200 rounded-xl p-4 shadow-soft flex items-center justify-between flex-wrap gap-3">
+  <div class="flex items-center gap-3">
+    <span class="text-2xl">🔗</span>
+    <div>
+      <div class="font-medium text-slate-800 text-sm">하나의 Django 프로젝트로 통합</div>
+      <div class="text-xs text-slate-500">단일 로그인 · 공유 사용자 DB · 일관된 디자인 시스템</div>
+    </div>
+  </div>
+  <div class="flex gap-4 text-xs text-slate-500">
+    <div><b class="text-brand-700">3</b> 수상 작품</div>
+    <div><b class="text-brand-700">6</b> Django 앱</div>
+    <div><b class="text-brand-700">1</b> SQLite DB</div>
   </div>
 </div>
+
 {% endblock %}

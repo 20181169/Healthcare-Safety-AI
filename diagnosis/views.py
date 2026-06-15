@@ -109,3 +109,9 @@ def result_view(request, pk: int):
 def history_view(request):
     qs = Recording.objects.all()[:100]
     return render(request, "diagnosis/history.html", {"recordings": qs})
+
+
+@require_http_methods(["GET"])
+def about_view(request):
+    """포트폴리오용 기술 노트 — 비로그인도 열람 가능."""
+    return render(request, "diagnosis/about.html")

@@ -11,4 +11,5 @@ urlpatterns = [
     path("live/", views.live, name="live"),
     path("live/stream/<int:camera_id>/", views.live_stream, name="live_stream"),
     path("api/quick-infer/", views.quick_infer, name="quick_infer"),
+    path("about/", views.about_view, name="about"),
 ]
