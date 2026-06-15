@@ -45,6 +45,17 @@ weights/
 *.pth
 *.onnx
 
+# Deployment demo assets committed intentionally.
+!ai_assets/
+!ai_assets/**
+!ai_assets/**/checkpoints/
+!ai_assets/**/outputs/
+!ai_assets/**/weights/
+!ai_assets/**/*.pt
+!ai_assets/**/*.pth
+ai_assets/**/__pycache__/
+ai_assets/**/*.py[cod]
+
 # OS/editor noise
 .DS_Store
 Thumbs.db

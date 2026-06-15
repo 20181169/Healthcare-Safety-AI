@@ -10,14 +10,12 @@ from pathlib import Path
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent           # .../win
-EXTERNAL_DIR = BASE_DIR.parent                              # .../Desktop
+ASSETS_DIR = BASE_DIR / "ai_assets"
 
-# 외부 프로젝트 디렉토리 — 무거운 가중치/엔진 코드는 그대로 두고 참조만.
-#   - 수상관리/               (pipeline.py, services/, models/, utils/, weights/)
-#   - 수상관리_소아엑스레이/    (src/{classifier,data})
-# 단, 수상관리_심폐음/src 는 win/audio_sr/ 로 복사하여 이름 충돌(src)을 회피했다.
-SAFETY_ROOT = Path(os.environ.get("SAFETY_ROOT", str(EXTERNAL_DIR / "수상관리")))
-XRAY_ROOT = Path(os.environ.get("XRAY_ROOT", str(EXTERNAL_DIR / "수상관리_소아엑스레이")))
+# 배포 서버에는 외부 한글 경로 프로젝트가 없으므로, 필요한 데모 자산만
+# win/ai_assets 아래에 모아두고 기본 경로로 사용한다.
+SAFETY_ROOT = Path(os.environ.get("SAFETY_ROOT", str(ASSETS_DIR / "safety")))
+XRAY_ROOT = Path(os.environ.get("XRAY_ROOT", str(ASSETS_DIR / "xray")))
 
 # 안전관리 파이프라인 (pipeline.py, services, models, utils, config) 임포트용
 if SAFETY_ROOT.is_dir() and str(SAFETY_ROOT) not in sys.path:
@@ -149,7 +147,7 @@ ALLOWED_XRAY_EXTENSIONS = {"png", "jpg", "jpeg", "dcm"}
 
 # ───────── 심폐음 진단 (diagnosis 앱) ─────────
 HEART_LUNG_ROOT = Path(
-    os.environ.get("HEART_LUNG_ROOT", str(EXTERNAL_DIR / "수상관리_심폐음"))
+    os.environ.get("HEART_LUNG_ROOT", str(ASSETS_DIR / "heartlung"))
 )
 SR_CKPT = os.environ.get("SR_CKPT", str(HEART_LUNG_ROOT / "checkpoints" / "sr" / "best.pt"))
 CLS_CKPT = os.environ.get("CLS_CKPT", str(HEART_LUNG_ROOT / "checkpoints" / "cls" / "best_sr.pt"))
