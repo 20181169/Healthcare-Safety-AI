@@ -1,4 +1,5 @@
 {% extends "safety/base.html" %}
+{% load static %}
 {% block title %}이미지 분석{% endblock %}
 {% block safety_title %}이미지 분석{% endblock %}
 
@@ -33,9 +34,47 @@
           <div class="text-xs text-slate-400 mt-1">JPG · PNG · 최대 50MB</div>
         </label>
         <div class="mt-2 hidden text-xs text-slate-600" data-file-name></div>
+        {{ form.original_image }}
         {% if form.original_image.errors %}
           <p class="text-xs text-rose-600 mt-1">{{ form.original_image.errors|join:", " }}</p>
         {% endif %}
+      </div>
+
+      <div data-sample-picker class="border border-slate-200 rounded-xl p-4 bg-slate-50/70">
+        <div class="text-sm font-semibold text-slate-800">샘플로 테스트</div>
+        <div class="text-xs text-slate-500 mt-0.5 mb-3">샘플 현장 사진을 보고 선택하면 분석 이미지에 자동으로 들어갑니다.</div>
+        <div class="grid sm:grid-cols-3 gap-2">
+          <button type="button"
+                  data-sample-target="#{{ form.original_image.id_for_label }}"
+                  data-sample-url="{% static 'samples/safety/normal_lighting.jpg' %}"
+                  data-sample-name="normal_lighting.jpg"
+                  class="text-left border border-slate-200 bg-white hover:bg-brand-50 hover:border-brand-300 rounded-lg p-2 transition">
+            <img src="{% static 'samples/safety/normal_lighting.jpg' %}" alt="Safety sample 1"
+                 class="w-full aspect-video object-cover rounded-md border border-slate-100 bg-slate-100">
+            <div class="text-sm font-medium mt-2">현장 샘플 1</div>
+            <div class="text-xs text-slate-500 mt-0.5">작업자 이미지</div>
+          </button>
+          <button type="button"
+                  data-sample-target="#{{ form.original_image.id_for_label }}"
+                  data-sample-url="{% static 'samples/safety/low_light.jpg' %}"
+                  data-sample-name="low_light.jpg"
+                  class="text-left border border-slate-200 bg-white hover:bg-brand-50 hover:border-brand-300 rounded-lg p-2 transition">
+            <img src="{% static 'samples/safety/low_light.jpg' %}" alt="Safety sample 2"
+                 class="w-full aspect-video object-cover rounded-md border border-slate-100 bg-slate-100">
+            <div class="text-sm font-medium mt-2">현장 샘플 2</div>
+            <div class="text-xs text-slate-500 mt-0.5">작업자 이미지</div>
+          </button>
+          <button type="button"
+                  data-sample-target="#{{ form.original_image.id_for_label }}"
+                  data-sample-url="{% static 'samples/safety/multiple_workers.jpg' %}"
+                  data-sample-name="multiple_workers.jpg"
+                  class="text-left border border-slate-200 bg-white hover:bg-brand-50 hover:border-brand-300 rounded-lg p-2 transition">
+            <img src="{% static 'samples/safety/multiple_workers.jpg' %}" alt="Safety sample 3"
+                 class="w-full aspect-video object-cover rounded-md border border-slate-100 bg-slate-100">
+            <div class="text-sm font-medium mt-2">현장 샘플 3</div>
+            <div class="text-xs text-slate-500 mt-0.5">작업자 이미지</div>
+          </button>
+        </div>
       </div>
 
       <label class="flex items-center gap-2 text-sm text-slate-700 select-none">
@@ -92,6 +131,7 @@
   </div>
 </div>
 
+<script src="{% static 'js/sample-picker.js' %}"></script>
 <script>
   (function () {
     const input = document.querySelector('#{{ form.original_image.id_for_label }}');

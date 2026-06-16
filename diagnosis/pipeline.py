@@ -147,6 +147,7 @@ class DiagnosisPipeline:
         """
         seg = int((segment_sec or settings.INFERENCE_SEGMENT_SEC) * HR_SR)
         lr_wave, hr_ref = self._load_as_lr(upload_path)
+        valid_len = len(lr_wave)
 
         if len(lr_wave) < seg:
             pad = np.zeros(seg, dtype=np.float32)
@@ -155,10 +156,12 @@ class DiagnosisPipeline:
 
         restored = self._overlap_add_sr(lr_wave, seg=seg)
         restored = peak_normalize(restored).astype(np.float32)
+        restored_display = restored[:valid_len]
+        lr_display = lr_wave[:valid_len: HR_SR // LR_SR]
 
         out_abs = Path(settings.MEDIA_ROOT) / restored_rel_path
         out_abs.parent.mkdir(parents=True, exist_ok=True)
-        sf.write(str(out_abs), restored, HR_SR)
+        sf.write(str(out_abs), restored_display, HR_SR)
 
         snr_in = snr_out = float("nan")
         if hr_ref is not None:
@@ -172,7 +175,7 @@ class DiagnosisPipeline:
         # 시각화 PNG 3종 생성
         visuals_root = Path(settings.MEDIA_ROOT) / "visuals"
         stem = Path(restored_rel_path).stem
-        paths = render_all(lr_wave, restored, HR_SR, visuals_root, stem)
+        paths = render_all(lr_display, LR_SR, restored_display, HR_SR, visuals_root, stem)
         rel = lambda p: str(p.relative_to(settings.MEDIA_ROOT)).replace("\\", "/")
 
         idx = int(prob.argmax())

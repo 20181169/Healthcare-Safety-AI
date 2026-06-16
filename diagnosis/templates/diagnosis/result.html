@@ -133,7 +133,7 @@
 <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-soft">
   <h2 class="font-semibold text-slate-800 mb-1">신호 분석 그래프</h2>
   <p class="text-xs text-slate-500 mb-4">
-    Audio Super-Resolution 전·후의 시간 파형과 주파수 표현. 스펙트로그램에서 2 kHz 위쪽 대역이 복원되는 패턴을 확인할 수 있습니다.
+    Audio Super-Resolution 전·후의 시간 파형과 주파수 표현. LR은 실제 4 kHz 신호로, SR 출력은 16 kHz 복원 신호로 표시됩니다.
   </p>
 
   <div class="space-y-5">
@@ -143,7 +143,7 @@
       <img src="{{ rec.waveform_png.url }}" alt="waveform comparison"
            class="w-full rounded-lg border border-slate-200">
       <div class="text-xs text-slate-400 mt-1">
-        시간 도메인. 진폭 형태는 유사하지만 SR 복원본은 미세한 고주파 디테일을 추가로 표현합니다.
+        시간 도메인. 실제 신호 길이까지만 표시하여 입력 길이 보정용 무음 패딩은 제외했습니다.
       </div>
     </figure>
     {% endif %}
@@ -154,8 +154,8 @@
       <img src="{{ rec.spectrogram_png.url }}" alt="spectrogram comparison"
            class="w-full rounded-lg border border-slate-200">
       <div class="text-xs text-slate-400 mt-1">
-        가로축 시간, 세로축 주파수. LR은 ~2 kHz 까지만 에너지가 있고, SR이 위쪽 대역을 복원합니다.
-        crackle(짧은 burst) 과 wheeze(지속 톤) 패턴이 분류기 입력으로 사용됩니다.
+        가로축 시간, 세로축 주파수. LR과 SR을 각자의 실제 샘플링레이트 기준으로 비교합니다.
+        crackle(짧은 burst) 과 wheeze(지속 톤) 패턴은 시간-주파수 구조로 확인할 수 있습니다.
       </div>
     </figure>
     {% endif %}

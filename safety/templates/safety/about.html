@@ -212,7 +212,7 @@
           <tr>
             <td class="px-3 py-2.5 align-top">데이터셋의 정상 조명에선 Zero-DCE 효과 검증 불가</td>
             <td class="px-3 py-2.5 align-top">합성 darkening (감마 보정) 으로 진짜 저조도 시뮬레이션</td>
-            <td class="px-3 py-2.5 align-top text-emerald-700">밝기 66 환경에서 무조건 적용 AP +0.0754 (METRICS 참조)</td>
+            <td class="px-3 py-2.5 align-top text-emerald-700">밝기 66 환경에서 무조건 적용 AP +0.0754p (METRICS 참조)</td>
           </tr>
           <tr>
             <td class="px-3 py-2.5 align-top">감마 4.0 (밝기 66) 시 게이트 트리거 47/88 (53%) — 일부 어두운 sample 놓침</td>
@@ -323,8 +323,8 @@
     </div>
     <div class="border-l-4 border-brand-500 bg-brand-50/40 rounded-r-lg p-3">
       <div class="text-xs text-brand-600 font-medium">진짜 저조도 Zero-DCE 효과 ★</div>
-      <div class="text-2xl font-bold text-brand-700 mt-1 font-mono">+0.0754</div>
-      <div class="text-xs text-slate-500 mt-1">감마 4.0 (밝기 66) · 무조건 적용 시 +14.3%</div>
+      <div class="text-2xl font-bold text-brand-700 mt-1 font-mono">+0.0754p</div>
+      <div class="text-xs text-slate-500 mt-1">감마 4.0 · 무조건 적용 상대 +14.3% / 조건부 +0.0417p</div>
     </div>
     <div class="border-l-4 border-rose-400 bg-rose-50/40 rounded-r-lg p-3">
       <div class="text-xs text-rose-600 font-medium">정상 조명서 무조건 적용 손실</div>
@@ -335,7 +335,7 @@
 
   <!-- 5-2. 합성 darkening 검증 표 (메인 결과) -->
   <div class="mb-5">
-    <div class="text-sm font-medium text-slate-700 mb-2">📊 감마 보정 darkening × 3 조건 — 12 cell 실측</div>
+    <div class="text-sm font-medium text-slate-700 mb-2">📊 감마 보정 darkening 4단계 × 적용 방식 3종 — 12 cell 실측</div>
     <div class="overflow-x-auto">
       <table class="w-full text-xs border border-slate-200 rounded-lg overflow-hidden">
         <thead class="bg-slate-100 text-slate-600">
@@ -346,6 +346,7 @@
             <th class="text-right px-3 py-2">① Baseline</th>
             <th class="text-right px-3 py-2">② 조건부</th>
             <th class="text-right px-3 py-2">③ 무조건</th>
+            <th class="text-right px-3 py-2">Δ(②−①)</th>
             <th class="text-right px-3 py-2">Δ(③−①)</th>
           </tr>
         </thead>
@@ -360,6 +361,7 @@
             <td class="text-right font-mono">0.6381</td>
             <td class="text-right font-mono">0.6385</td>
             <td class="text-right font-mono">0.5158</td>
+            <td class="text-right font-mono text-slate-500">+0.0004</td>
             <td class="text-right font-mono text-rose-600">−0.1223</td>
           </tr>
           <tr>
@@ -372,6 +374,7 @@
             <td class="text-right font-mono">0.6310</td>
             <td class="text-right font-mono">0.6315</td>
             <td class="text-right font-mono">0.5860</td>
+            <td class="text-right font-mono text-slate-500">+0.0005</td>
             <td class="text-right font-mono text-rose-600">−0.0450</td>
           </tr>
           <tr class="bg-amber-50/30">
@@ -384,6 +387,7 @@
             <td class="text-right font-mono">0.6084</td>
             <td class="text-right font-mono">0.6149</td>
             <td class="text-right font-mono font-bold text-emerald-700">0.6440</td>
+            <td class="text-right font-mono text-emerald-700">+0.0065</td>
             <td class="text-right font-mono text-emerald-700">+0.0356</td>
           </tr>
           <tr class="bg-emerald-50/40">
@@ -396,6 +400,7 @@
             <td class="text-right font-mono">0.5273</td>
             <td class="text-right font-mono">0.5690</td>
             <td class="text-right font-mono font-bold text-emerald-700">0.6027</td>
+            <td class="text-right font-mono font-bold text-emerald-700">+0.0417</td>
             <td class="text-right font-mono font-bold text-emerald-700">+0.0754</td>
           </tr>
         </tbody>
@@ -413,9 +418,9 @@
     <div class="bg-emerald-50/40 border border-emerald-200 rounded-xl p-4">
       <div class="font-semibold text-emerald-800 mb-2">✓ 입증된 것</div>
       <ul class="text-xs text-slate-700 space-y-1.5">
-        <li>• <b>darkness 가 깊을수록 Zero-DCE 효과 단조 증가</b> (Δ +0.0004 → +0.0754)</li>
+        <li>• <b>darkness 가 깊을수록 Zero-DCE 효과 단조 증가</b> (조건부 Δ +0.0004p → +0.0417p, 무조건 최대 +0.0754p)</li>
         <li>• <b>임계점 ~ 밝기 87</b>: 이보다 어두우면 무조건 적용도 이득</li>
-        <li>• <b>매우 어두운 환경 (밝기 66) AP +14.3%</b> 실측 회복</li>
+        <li>• <b>매우 어두운 환경 (밝기 66) AP +0.0754p</b> 실측 회복 (상대 +14.3%)</li>
         <li>• <b>noise 기반 게이트는 결함</b> — 데이터 분석으로 정량 증명</li>
       </ul>
     </div>
@@ -436,7 +441,7 @@
     <p class="text-sm text-slate-700 leading-relaxed">
       <b>Zero-DCE 의 helmet detection 효과는 환경 조명에 강하게 의존</b>.
       정상 조명 (밝기 ≥ 115) 에선 효과 미미하지만,
-      매우 어두운 환경 (밝기 ≤ 66) 에선 <b>AP +0.0754, F1 +0.053</b> 의 명확한 회복.
+      매우 어두운 환경 (밝기 ≤ 66) 에선 <b>AP +0.0754p (상대 +14.3%), F1 +0.053</b> 의 명확한 회복.
       시스템 설계 가정인 야간/터널 공사현장에서의 가치는 정량적으로 검증됨.
       단 현재 게이트 임계값 (밝기 60) 은 정상 조명용 — 야간 운영 시 더 관대한 임계값 (예: 밝기 100)
       또는 무조건 적용이 더 좋을 가능성.

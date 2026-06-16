@@ -1,4 +1,5 @@
 {% extends "diagnosis/base.html" %}
+{% load static %}
 
 {% block title %}측정 업로드 · 심폐음 진단{% endblock %}
 {% block diagnosis_title %}측정 업로드{% endblock %}
@@ -50,6 +51,37 @@
         {% if form.original_wav.errors %}
           <p class="text-xs text-rose-600 mt-1">{{ form.original_wav.errors|join:", " }}</p>
         {% endif %}
+      </div>
+
+      <div data-sample-picker class="border border-slate-200 rounded-xl p-4 bg-slate-50/70">
+        <div class="text-sm font-semibold text-slate-800">샘플로 테스트</div>
+        <div class="text-xs text-slate-500 mt-0.5 mb-3">청진음 샘플을 고르면 WAV 파일 선택란에 자동으로 들어갑니다.</div>
+        <div class="grid sm:grid-cols-3 gap-2">
+          <button type="button"
+                  data-sample-target="#{{ form.original_wav.id_for_label }}"
+                  data-sample-url="{% static 'samples/audio/normal.wav' %}"
+                  data-sample-name="normal.wav"
+                  class="text-left border border-slate-200 bg-white hover:bg-brand-50 hover:border-brand-300 rounded-lg px-3 py-2 transition">
+            <div class="text-sm font-medium">정상 호흡음</div>
+            <div class="text-xs text-slate-500 mt-0.5">Normal</div>
+          </button>
+          <button type="button"
+                  data-sample-target="#{{ form.original_wav.id_for_label }}"
+                  data-sample-url="{% static 'samples/audio/demo_crackle_model_aligned.wav' %}"
+                  data-sample-name="demo_crackle_model_aligned.wav"
+                  class="text-left border border-slate-200 bg-white hover:bg-brand-50 hover:border-brand-300 rounded-lg px-3 py-2 transition">
+            <div class="text-sm font-medium">수포음</div>
+            <div class="text-xs text-slate-500 mt-0.5">Crackle</div>
+          </button>
+          <button type="button"
+                  data-sample-target="#{{ form.original_wav.id_for_label }}"
+                  data-sample-url="{% static 'samples/audio/demo_wheeze_model_aligned.wav' %}"
+                  data-sample-name="demo_wheeze_model_aligned.wav"
+                  class="text-left border border-slate-200 bg-white hover:bg-brand-50 hover:border-brand-300 rounded-lg px-3 py-2 transition">
+            <div class="text-sm font-medium">천명음</div>
+            <div class="text-xs text-slate-500 mt-0.5">Wheeze</div>
+          </button>
+        </div>
       </div>
 
       <div class="flex items-center justify-between pt-2 border-t border-slate-100">
@@ -122,6 +154,7 @@
   </ol>
 </div>
 
+<script src="{% static 'js/sample-picker.js' %}"></script>
 <script>
   // 드래그앤드롭 영역에 선택된 파일 이름 표시
   (function () {

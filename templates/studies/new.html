@@ -67,6 +67,47 @@
       결과 확인까지 보통 1~3초 소요됩니다.
     </div>
 
+    <div data-sample-picker class="border border-slate-200 rounded-xl p-4 bg-slate-50/70">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <div>
+          <div class="text-sm font-semibold text-slate-800">샘플로 테스트</div>
+          <div class="text-xs text-slate-500 mt-0.5">샘플 이미지를 보고 선택하면 업로드 파일에 자동으로 들어갑니다.</div>
+        </div>
+      </div>
+      <div class="grid sm:grid-cols-3 gap-2">
+        <button type="button"
+                data-sample-target="#image-input"
+                data-sample-url="{% static 'samples/xray/normal.jpeg' %}"
+                data-sample-name="normal.jpeg"
+                class="text-left border border-slate-200 bg-white hover:bg-brand-50 hover:border-brand-300 rounded-lg p-2 transition">
+          <img src="{% static 'samples/xray/normal.jpeg' %}" alt="X-ray sample 1"
+               class="w-full aspect-square object-contain bg-black rounded-md border border-slate-100">
+          <div class="text-sm font-medium mt-2">X-ray 샘플 1</div>
+          <div class="text-xs text-slate-500 mt-0.5">흉부 X-ray 이미지</div>
+        </button>
+        <button type="button"
+                data-sample-target="#image-input"
+                data-sample-url="{% static 'samples/xray/pneumonia_viral.jpeg' %}"
+                data-sample-name="pneumonia_viral.jpeg"
+                class="text-left border border-slate-200 bg-white hover:bg-brand-50 hover:border-brand-300 rounded-lg p-2 transition">
+          <img src="{% static 'samples/xray/pneumonia_viral.jpeg' %}" alt="X-ray sample 2"
+               class="w-full aspect-square object-contain bg-black rounded-md border border-slate-100">
+          <div class="text-sm font-medium mt-2">X-ray 샘플 2</div>
+          <div class="text-xs text-slate-500 mt-0.5">흉부 X-ray 이미지</div>
+        </button>
+        <button type="button"
+                data-sample-target="#image-input"
+                data-sample-url="{% static 'samples/xray/pneumonia_bacterial.jpeg' %}"
+                data-sample-name="pneumonia_bacterial.jpeg"
+                class="text-left border border-slate-200 bg-white hover:bg-brand-50 hover:border-brand-300 rounded-lg p-2 transition">
+          <img src="{% static 'samples/xray/pneumonia_bacterial.jpeg' %}" alt="X-ray sample 3"
+               class="w-full aspect-square object-contain bg-black rounded-md border border-slate-100">
+          <div class="text-sm font-medium mt-2">X-ray 샘플 3</div>
+          <div class="text-xs text-slate-500 mt-0.5">흉부 X-ray 이미지</div>
+        </button>
+      </div>
+    </div>
+
     <div class="flex justify-end gap-2">
       <a href="{% url 'landing' %}" class="px-4 py-2 text-sm text-slate-600 hover:text-slate-900">취소</a>
       <button id="submit-btn" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-medium">
@@ -79,4 +120,5 @@
 
 {% block scripts %}
 <script src="{% static 'js/upload.js' %}"></script>
+<script src="{% static 'js/sample-picker.js' %}"></script>
 {% endblock %}
