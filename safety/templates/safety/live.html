@@ -11,9 +11,9 @@
       <div class="text-xs font-medium text-slate-500 mb-2">재생 속도</div>
       <div class="inline-flex bg-slate-100 rounded-lg p-0.5" role="group">
         <button type="button" class="px-3 py-1.5 rounded-md text-xs speed-btn font-medium transition" data-skip="1">1x</button>
-        <button type="button" class="px-3 py-1.5 rounded-md text-xs speed-btn font-medium transition is-active" data-skip="3">3x</button>
+        <button type="button" class="px-3 py-1.5 rounded-md text-xs speed-btn font-medium transition" data-skip="3">3x</button>
         <button type="button" class="px-3 py-1.5 rounded-md text-xs speed-btn font-medium transition" data-skip="5">5x</button>
-        <button type="button" class="px-3 py-1.5 rounded-md text-xs speed-btn font-medium transition" data-skip="10">10x</button>
+        <button type="button" class="px-3 py-1.5 rounded-md text-xs speed-btn font-medium transition is-active" data-skip="10">10x</button>
       </div>
     </div>
     <div>
@@ -51,7 +51,7 @@
       </span>
     </div>
     <div class="bg-slate-900 aspect-video">
-      <img src="{% url 'safety:live_stream' cam.id %}?skip=3"
+      <img src="{% url 'safety:live_stream' cam.id %}?skip=10&fps=2&mode=bg&infer_size=224&infer_interval=0.5&ttl=1.2&anonymize=1"
            alt="{{ cam.name }} live stream"
            data-base-url="{% url 'safety:live_stream' cam.id %}"
            class="w-full h-full object-contain live-frame">
@@ -62,8 +62,8 @@
 </div>
 
 <div class="mt-4 text-xs text-slate-500 bg-slate-100 rounded-lg px-4 py-3">
-  실시간 스트림은 MJPEG 으로 송출. 각 프레임이 파이프라인을 거쳐 안전모 판정 + 얼굴 비식별 처리 후 표시됩니다.
-  백그라운드 모드에서는 추론 스레드가 박스만 갱신하고 박스 TTL(0.8초) 이 지나면 자동 제거.
+  포트폴리오 시연 서버 부하를 줄이기 위해 기본 스트림은 2 FPS 로 송출하고, AI 판정은 약 0.5초마다 한 번씩 최신 프레임에 대해 갱신합니다.
+  백그라운드 모드에서는 추론 스레드가 박스만 갱신하고 박스 TTL(1.2초) 이 지나면 자동 제거됩니다.
 </div>
 
 <style>
@@ -75,12 +75,20 @@
 <script>
   (function () {
     const imgs = document.querySelectorAll('.live-frame');
-    const state = { skip: 3, mode: 'bg', anon: 1 };
+    const state = {
+      skip: 10,
+      mode: 'bg',
+      anon: 1,
+      fps: 2,
+      inferSize: 224,
+      inferInterval: 0.5,
+      ttl: 1.2
+    };
 
     function refresh() {
       imgs.forEach(img => {
         const base = img.dataset.baseUrl;
-        const q = `skip=${state.skip}&mode=${state.mode}&anonymize=${state.anon}&t=${Date.now()}`;
+        const q = `skip=${state.skip}&fps=${state.fps}&mode=${state.mode}&infer_size=${state.inferSize}&infer_interval=${state.inferInterval}&ttl=${state.ttl}&anonymize=${state.anon}&t=${Date.now()}`;
         img.src = `${base}?${q}`;
       });
     }
