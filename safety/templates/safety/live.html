@@ -11,18 +11,20 @@
       <div class="text-xs font-medium text-slate-500 mb-2">재생 속도</div>
       <div class="inline-flex bg-slate-100 rounded-lg p-0.5" role="group">
         <button type="button" class="px-3 py-1.5 rounded-md text-xs speed-btn font-medium transition" data-skip="1">1x</button>
-        <button type="button" class="px-3 py-1.5 rounded-md text-xs speed-btn font-medium transition" data-skip="3">3x</button>
+        <button type="button" class="px-3 py-1.5 rounded-md text-xs speed-btn font-medium transition is-active" data-skip="3">3x</button>
         <button type="button" class="px-3 py-1.5 rounded-md text-xs speed-btn font-medium transition" data-skip="5">5x</button>
-        <button type="button" class="px-3 py-1.5 rounded-md text-xs speed-btn font-medium transition is-active" data-skip="10">10x</button>
+        <button type="button" class="px-3 py-1.5 rounded-md text-xs speed-btn font-medium transition" data-skip="10">10x</button>
       </div>
     </div>
     <div>
-      <div class="text-xs font-medium text-slate-500 mb-2">판정 모드</div>
+      <div class="text-xs font-medium text-slate-500 mb-2">추론 모드</div>
       <div class="inline-flex bg-slate-100 rounded-lg p-0.5" role="group">
         <button type="button" class="px-3 py-1.5 rounded-md text-xs mode-btn font-medium transition is-active"
-                data-mode="bg" title="0.5초마다 스냅샷 한 장을 분석합니다">ON</button>
+                data-mode="bg" title="영상은 부드럽고 박스만 백그라운드 추론(약간 지연)">백그라운드</button>
         <button type="button" class="px-3 py-1.5 rounded-md text-xs mode-btn font-medium transition"
-                data-mode="off" title="추론 없이 원본 스냅샷만 표시합니다">OFF</button>
+                data-mode="sync" title="매 프레임 즉시 추론 — 박스가 영상과 정확히 동기화(느림)">동기</button>
+        <button type="button" class="px-3 py-1.5 rounded-md text-xs mode-btn font-medium transition"
+                data-mode="off" title="추론 끔 — 원본만 송출(가장 빠름)">끔</button>
       </div>
     </div>
     <div>
@@ -38,47 +40,30 @@
 <!-- 카메라 그리드 -->
 <div class="grid lg:grid-cols-2 gap-4">
 {% for cam in cameras %}
-  <div class="bg-white border border-slate-200 rounded-xl shadow-soft overflow-hidden stream-card">
+  <div class="bg-white border border-slate-200 rounded-xl shadow-soft overflow-hidden">
     <div class="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between">
       <div>
         <span class="font-medium text-slate-800">{{ cam.name }}</span>
         <span class="text-xs text-slate-500 ml-2">{{ cam.location }}</span>
       </div>
-      <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600"
-            data-stream-status>
-        READY
+      <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> LIVE
       </span>
     </div>
-    <div class="bg-slate-900 aspect-video relative">
-      <img alt="{{ cam.name }} live stream"
-           data-base-url="{% url 'safety:live_snapshot' cam.id %}"
-           class="w-full h-full object-contain live-frame hidden">
-      <div class="absolute inset-0 grid place-items-center text-center px-6" data-stream-placeholder>
-        <div>
-          <div class="text-slate-300 font-semibold mb-2">스냅샷 시연 대기 중</div>
-          <p class="text-slate-400 text-xs mb-4 leading-relaxed">
-            포트폴리오 서버 부하를 줄이기 위해 0.5초마다 한 장씩 분석합니다.
-          </p>
-          <button type="button"
-                  class="start-stream inline-flex items-center justify-center px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition">
-            시연 시작
-          </button>
-        </div>
-      </div>
+    <div class="bg-slate-900 aspect-video">
+      <img src="{% url 'safety:live_stream' cam.id %}?skip=3"
+           alt="{{ cam.name }} live stream"
+           data-base-url="{% url 'safety:live_stream' cam.id %}"
+           class="w-full h-full object-contain live-frame">
     </div>
-    <div class="px-4 py-2 text-xs text-slate-400 font-mono break-all flex items-center justify-between gap-3">
-      <span class="break-all">{{ cam.stream_url }}</span>
-      <button type="button" class="stop-stream hidden shrink-0 text-rose-500 hover:text-rose-700 font-medium">
-        정지
-      </button>
-    </div>
+    <div class="px-4 py-2 text-xs text-slate-400 font-mono break-all">{{ cam.stream_url }}</div>
   </div>
 {% endfor %}
 </div>
 
 <div class="mt-4 text-xs text-slate-500 bg-slate-100 rounded-lg px-4 py-3">
-  포트폴리오 시연 서버 부하를 줄이기 위해 MJPEG 스트리밍 대신 0.5초마다 한 장의 스냅샷을 요청합니다.
-  각 요청은 프레임 1장 분석 후 바로 종료되므로 다른 페이지 요청을 장시간 막지 않습니다.
+  실시간 스트림은 MJPEG 으로 송출. 각 프레임이 파이프라인을 거쳐 안전모 판정 + 얼굴 비식별 처리 후 표시됩니다.
+  백그라운드 모드에서는 추론 스레드가 박스만 갱신하고 박스 TTL(0.8초) 이 지나면 자동 제거.
 </div>
 
 <style>
@@ -89,69 +74,14 @@
 
 <script>
   (function () {
-    const cards = document.querySelectorAll('.stream-card');
-    const state = {
-      skip: 10,
-      mode: 'bg',
-      anon: 1,
-      inferSize: 224,
-      intervalMs: 500
-    };
-
-    function snapshotUrl(img, tick) {
-      const base = img.dataset.baseUrl;
-      const q = `skip=${state.skip}&mode=${state.mode}&infer_size=${state.inferSize}&anonymize=${state.anon}&tick=${tick}&t=${Date.now()}`;
-      return `${base}?${q}`;
-    }
-
-    function setStatus(card, running) {
-      const status = card.querySelector('[data-stream-status]');
-      status.textContent = running ? 'RUNNING' : 'READY';
-      status.className = running
-        ? 'flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700'
-        : 'flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600';
-    }
-
-    function loadSnapshot(card) {
-      const img = card.querySelector('.live-frame');
-      const tick = Number(card.dataset.tick || '0');
-      card.dataset.tick = String(tick + 1);
-      img.src = snapshotUrl(img, tick);
-    }
-
-    function start(card) {
-      const img = card.querySelector('.live-frame');
-      const placeholder = card.querySelector('[data-stream-placeholder]');
-      const stop = card.querySelector('.stop-stream');
-      img.classList.remove('hidden');
-      placeholder.classList.add('hidden');
-      stop.classList.remove('hidden');
-      card.dataset.running = '1';
-      card.dataset.tick = card.dataset.tick || '0';
-      setStatus(card, true);
-      loadSnapshot(card);
-      card._snapshotTimer = window.setInterval(() => loadSnapshot(card), state.intervalMs);
-    }
-
-    function stop(card) {
-      const img = card.querySelector('.live-frame');
-      const placeholder = card.querySelector('[data-stream-placeholder]');
-      const stop = card.querySelector('.stop-stream');
-      if (card._snapshotTimer) {
-        window.clearInterval(card._snapshotTimer);
-        card._snapshotTimer = null;
-      }
-      img.removeAttribute('src');
-      img.classList.add('hidden');
-      placeholder.classList.remove('hidden');
-      stop.classList.add('hidden');
-      card.dataset.running = '0';
-      setStatus(card, false);
-    }
+    const imgs = document.querySelectorAll('.live-frame');
+    const state = { skip: 3, mode: 'bg', anon: 1 };
 
     function refresh() {
-      cards.forEach(card => {
-        if (card.dataset.running === '1') loadSnapshot(card);
+      imgs.forEach(img => {
+        const base = img.dataset.baseUrl;
+        const q = `skip=${state.skip}&mode=${state.mode}&anonymize=${state.anon}&t=${Date.now()}`;
+        img.src = `${base}?${q}`;
       });
     }
 
@@ -169,12 +99,6 @@
     bind('.speed-btn', 'skip', 'skip');
     bind('.mode-btn',  'mode', 'mode');
     bind('.anon-btn',  'anon', 'anon');
-
-    cards.forEach(card => {
-      card.dataset.running = '0';
-      card.querySelector('.start-stream').addEventListener('click', () => start(card));
-      card.querySelector('.stop-stream').addEventListener('click', () => stop(card));
-    });
   })();
 </script>
 

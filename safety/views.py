@@ -238,67 +238,6 @@ def _overlay(frame: np.ndarray, results: list, anonymize: bool) -> bytes:
     return buf.tobytes() if ok else b""
 
 
-def _placeholder_jpeg(message: str) -> bytes:
-    placeholder = np.full((360, 640, 3), 30, dtype=np.uint8)
-    cv2.putText(placeholder, message[:48], (20, 180),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-    ok, buf = cv2.imencode(".jpg", placeholder, [cv2.IMWRITE_JPEG_QUALITY, 80])
-    return buf.tobytes() if ok else b""
-
-
-def _read_camera_frame(cam: Camera, tick: int, step: int) -> np.ndarray | None:
-    """짧은 snapshot 요청용으로 프레임 한 장만 읽는다."""
-    source = cam.source
-    src = int(source) if source.isdigit() else source
-    cap = cv2.VideoCapture(src)
-    try:
-        if not cap.isOpened():
-            return None
-
-        # 시연용 업로드 영상은 tick 기반으로 위치를 이동해 정지 화면처럼 보이지 않게 한다.
-        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
-        if cam.video_file and frame_count > 0:
-            frame_index = (max(0, tick) * max(1, step)) % frame_count
-            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_index)
-
-        ok, frame = cap.read()
-        return frame if ok else None
-    finally:
-        cap.release()
-
-
-def live_snapshot(request, camera_id: int):
-    """짧게 끝나는 polling 용 JPEG snapshot.
-
-    StreamingHttpResponse 와 달리 요청이 바로 끝나므로 Gunicorn worker 를 장시간 점유하지 않는다.
-    """
-    cam = get_object_or_404(Camera, pk=camera_id)
-    tick = max(0, int(request.GET.get("tick", 0)))
-    step = max(1, int(request.GET.get("skip", 10)))
-    mode = request.GET.get("mode", "bg").lower()
-    anonymize = request.GET.get("anonymize", "1") != "0"
-    infer_size = max(160, min(1280, int(request.GET.get("infer_size", 224))))
-
-    frame = _read_camera_frame(cam, tick=tick, step=step)
-    if frame is None:
-        jpeg = _placeholder_jpeg(f"cannot open: {cam.source}")
-    elif mode == "off":
-        ok, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 82])
-        jpeg = buf.tobytes() if ok else b""
-    else:
-        H, W = frame.shape[:2]
-        if W > infer_size:
-            scale = infer_size / W
-            frame = cv2.resize(frame, (infer_size, int(H * scale)),
-                               interpolation=cv2.INTER_AREA)
-        run = _pipeline_runner().run_on_frame(frame, anonymize=anonymize)
-        jpeg = run["vis_jpeg"]
-
-    response = HttpResponse(jpeg, content_type="image/jpeg")
-    response["Cache-Control"] = "no-store, max-age=0"
-    return response
-
-
 def live_stream(request, camera_id: int):
     """비동기 추론 라이브 스트림.
 
@@ -308,19 +247,17 @@ def live_stream(request, camera_id: int):
          - 박스 TTL(ttl 초) 지나면 캐시 자동 무효화 → 박스 잔상 제거
 
        URL 파라미터 (모두 선택):
-         fps=2          송출 FPS (기본 2, 포트폴리오 시연용 저부하)
-         infer_size=224 추론 입력 폭(px). 작을수록 빠름. (기본 224)
-         infer_interval=2.0  백그라운드 추론 최소 간격(초). 기본 2.0
-         ttl=3.0        박스 캐시 유효 시간(초). 지나면 박스 사라짐. (기본 3.0)
+         fps=25         송출 FPS (기본 25)
+         infer_size=384 추론 입력 폭(px). 작을수록 빠름. (기본 384)
+         ttl=0.8        박스 캐시 유효 시간(초). 지나면 박스 사라짐. (기본 0.8)
          anonymize=0|1  얼굴 비식별 (기본 1)
     """
     cam = get_object_or_404(Camera, pk=camera_id)
     source = cam.source
     src = int(source) if source.isdigit() else source
-    target_fps = max(1, min(30, int(request.GET.get("fps", 2))))
-    infer_size = max(160, min(1280, int(request.GET.get("infer_size", 224))))
-    infer_interval = max(0.1, min(10.0, float(request.GET.get("infer_interval", 2.0))))
-    ttl = float(request.GET.get("ttl", 3.0))
+    target_fps = max(1, min(120, int(request.GET.get("fps", 30))))
+    infer_size = max(160, min(1280, int(request.GET.get("infer_size", 384))))
+    ttl = float(request.GET.get("ttl", 0.8))
     anonymize = request.GET.get("anonymize", "1") != "0"
     # frame_skip: 1 이면 모든 프레임 사용, 3 이면 3프레임 중 1개만 = 영상 3배속
     frame_skip = max(1, int(request.GET.get("skip", 3)))
@@ -345,13 +282,8 @@ def live_stream(request, camera_id: int):
     lock = threading.Lock()
 
     def infer_loop():
-        # 백그라운드: 저부하 시연을 위해 일정 간격마다 최신 프레임만 추론.
-        last_infer = 0.0
+        # 백그라운드: 가능한 만큼 추론. 항상 가장 최신 프레임만 처리.
         while not state["stop"]:
-            now = time.perf_counter()
-            if now - last_infer < infer_interval:
-                time.sleep(min(0.05, infer_interval - (now - last_infer)))
-                continue
             with lock:
                 frame = state["frame"]
             if frame is None:
@@ -374,10 +306,8 @@ def live_stream(request, camera_id: int):
                 with lock:
                     state["results"] = results
                     state["ts"] = time.time()
-                last_infer = time.perf_counter()
             except Exception:
                 # 추론 실패해도 송출은 계속
-                last_infer = time.perf_counter()
                 time.sleep(0.05)
 
     def generator():

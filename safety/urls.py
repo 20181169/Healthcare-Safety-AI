@@ -9,7 +9,7 @@ urlpatterns = [
     path("history/", views.history, name="history"),
     path("event/<int:pk>/", views.event_detail, name="event_detail"),
     path("live/", views.live, name="live"),
-    path("live/snapshot/<int:camera_id>/", views.live_snapshot, name="live_snapshot"),
+    path("live/stream/<int:camera_id>/", views.live_stream, name="live_stream"),
     path("api/quick-infer/", views.quick_infer, name="quick_infer"),
     path("about/", views.about_view, name="about"),
 ]
