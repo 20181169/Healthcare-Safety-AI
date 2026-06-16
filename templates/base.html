@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}통합 헬스케어·안전 AI 플랫폼{% endblock %}</title>
+<title>{% block title %}수상 프로젝트 포트폴리오{% endblock %}</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -65,8 +65,8 @@ tailwind.config = {
   <div class="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
     <div class="flex items-center gap-1">
       <a href="{% url 'landing' %}" class="flex items-center gap-2 font-bold text-brand-700 pr-4">
-        <span class="inline-block w-8 h-8 bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-lg grid place-items-center font-bold shadow-soft">H</span>
-        <span class="hidden sm:inline">Healthcare<span class="text-slate-400 mx-1">·</span>Safety AI</span>
+        <span class="inline-block w-8 h-8 bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-lg grid place-items-center text-sm font-extrabold shadow-soft">P</span>
+        <span class="hidden sm:inline">수상작<span class="text-slate-400 mx-1">·</span>포트폴리오</span>
       </a>
 
       {% if user.is_authenticated %}
@@ -157,7 +157,7 @@ tailwind.config = {
 
 <footer class="border-t border-slate-200 bg-white mt-8">
   <div class="max-w-7xl mx-auto px-4 py-4 text-xs text-slate-400 flex justify-between flex-wrap gap-2">
-    <span>© 통합 헬스케어·안전 AI 플랫폼 — 의료기기/안전관제 보조 시스템 (참고용)</span>
+    <span>© 수상 프로젝트 포트폴리오 — 의료 영상·심폐음·현장 안전 시연</span>
     <span>소아 X-ray · 심폐음 SR+진단 · 현장 안전관리</span>
   </div>
 </footer>
