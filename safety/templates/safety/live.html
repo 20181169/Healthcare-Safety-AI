@@ -5,6 +5,11 @@
 {% block safety_content %}
 {% if cameras %}
 <!-- 컨트롤 패널 -->
+<div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-900 mb-3">
+  ⚠️ <b>CPU 인스턴스 주의:</b> 실시간 추론(백그라운드/동기)은 단일 vCPU 환경에서 다른 페이지 응답을 늦출 수 있습니다.
+  기본은 <b>추론 끔</b> 모드 — 시연이 필요할 때만 추론을 켜고, 끝나면 다른 메뉴로 이동하면 스트림이 자동 종료됩니다.
+</div>
+
 <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft mb-4">
   <div class="grid md:grid-cols-3 gap-4 text-sm">
     <div>
@@ -19,12 +24,12 @@
     <div>
       <div class="text-xs font-medium text-slate-500 mb-2">추론 모드</div>
       <div class="inline-flex bg-slate-100 rounded-lg p-0.5" role="group">
+        <button type="button" class="px-3 py-1.5 rounded-md text-xs mode-btn font-medium transition"
+                data-mode="bg" title="영상은 부드럽고 박스만 백그라운드 추론(약간 지연) — CPU 부하 큼">백그라운드</button>
+        <button type="button" class="px-3 py-1.5 rounded-md text-xs mode-btn font-medium transition"
+                data-mode="sync" title="매 프레임 즉시 추론 — 박스가 영상과 정확히 동기화(가장 느림)">동기</button>
         <button type="button" class="px-3 py-1.5 rounded-md text-xs mode-btn font-medium transition is-active"
-                data-mode="bg" title="영상은 부드럽고 박스만 백그라운드 추론(약간 지연)">백그라운드</button>
-        <button type="button" class="px-3 py-1.5 rounded-md text-xs mode-btn font-medium transition"
-                data-mode="sync" title="매 프레임 즉시 추론 — 박스가 영상과 정확히 동기화(느림)">동기</button>
-        <button type="button" class="px-3 py-1.5 rounded-md text-xs mode-btn font-medium transition"
-                data-mode="off" title="추론 끔 — 원본만 송출(가장 빠름)">끔</button>
+                data-mode="off" title="추론 끔 — 원본만 송출(기본값, 가장 가벼움)">끔 (기본)</button>
       </div>
     </div>
     <div>
@@ -75,7 +80,8 @@
 <script>
   (function () {
     const imgs = document.querySelectorAll('.live-frame');
-    const state = { skip: 3, mode: 'bg', anon: 1 };
+    // 기본 모드는 'off' — 진입 즉시 추론 안 함 (CPU 보호). 사용자가 명시적으로 클릭 시에만 활성.
+    const state = { skip: 3, mode: 'off', anon: 1 };
 
     function refresh() {
       imgs.forEach(img => {
@@ -84,6 +90,32 @@
         img.src = `${base}?${q}`;
       });
     }
+
+    // ★ 페이지를 떠나거나 숨길 때 모든 MJPEG 스트림 강제 종료
+    //   — img.src 를 빈 값으로 바꾸면 브라우저가 서버 연결을 끊고,
+    //     Django 의 generator() finally 블록이 발화되어 워커가 해제됨
+    function stopAllStreams() {
+      imgs.forEach(img => {
+        try {
+          img.src = '';
+          img.removeAttribute('src');
+        } catch (e) { /* noop */ }
+      });
+    }
+
+    // 페이지 이동/탭 전환/창 닫기 모두에서 스트림 종료
+    window.addEventListener('pagehide', stopAllStreams);
+    window.addEventListener('beforeunload', stopAllStreams);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') stopAllStreams();
+    });
+    // 상단 nav 의 다른 메뉴 (a 태그) 클릭 시도 즉시 종료
+    document.querySelectorAll('a[href]').forEach(a => {
+      // 동일 페이지 내 anchor 제외
+      const href = a.getAttribute('href') || '';
+      if (href.startsWith('#') || href === '') return;
+      a.addEventListener('click', stopAllStreams, { passive: true });
+    });
 
     function bind(selector, key, attr) {
       const btns = document.querySelectorAll(selector);
@@ -99,6 +131,9 @@
     bind('.speed-btn', 'skip', 'skip');
     bind('.mode-btn',  'mode', 'mode');
     bind('.anon-btn',  'anon', 'anon');
+
+    // 진입 시 mode=off 로 1회 refresh (서버 측 추론 부담 0)
+    refresh();
   })();
 </script>
 
