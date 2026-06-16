@@ -238,6 +238,67 @@ def _overlay(frame: np.ndarray, results: list, anonymize: bool) -> bytes:
     return buf.tobytes() if ok else b""
 
 
+def _placeholder_jpeg(message: str) -> bytes:
+    placeholder = np.full((360, 640, 3), 30, dtype=np.uint8)
+    cv2.putText(placeholder, message[:48], (20, 180),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+    ok, buf = cv2.imencode(".jpg", placeholder, [cv2.IMWRITE_JPEG_QUALITY, 80])
+    return buf.tobytes() if ok else b""
+
+
+def _read_camera_frame(cam: Camera, tick: int, step: int) -> np.ndarray | None:
+    """짧은 snapshot 요청용으로 프레임 한 장만 읽는다."""
+    source = cam.source
+    src = int(source) if source.isdigit() else source
+    cap = cv2.VideoCapture(src)
+    try:
+        if not cap.isOpened():
+            return None
+
+        # 시연용 업로드 영상은 tick 기반으로 위치를 이동해 정지 화면처럼 보이지 않게 한다.
+        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
+        if cam.video_file and frame_count > 0:
+            frame_index = (max(0, tick) * max(1, step)) % frame_count
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_index)
+
+        ok, frame = cap.read()
+        return frame if ok else None
+    finally:
+        cap.release()
+
+
+def live_snapshot(request, camera_id: int):
+    """짧게 끝나는 polling 용 JPEG snapshot.
+
+    StreamingHttpResponse 와 달리 요청이 바로 끝나므로 Gunicorn worker 를 장시간 점유하지 않는다.
+    """
+    cam = get_object_or_404(Camera, pk=camera_id)
+    tick = max(0, int(request.GET.get("tick", 0)))
+    step = max(1, int(request.GET.get("skip", 10)))
+    mode = request.GET.get("mode", "bg").lower()
+    anonymize = request.GET.get("anonymize", "1") != "0"
+    infer_size = max(160, min(1280, int(request.GET.get("infer_size", 224))))
+
+    frame = _read_camera_frame(cam, tick=tick, step=step)
+    if frame is None:
+        jpeg = _placeholder_jpeg(f"cannot open: {cam.source}")
+    elif mode == "off":
+        ok, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 82])
+        jpeg = buf.tobytes() if ok else b""
+    else:
+        H, W = frame.shape[:2]
+        if W > infer_size:
+            scale = infer_size / W
+            frame = cv2.resize(frame, (infer_size, int(H * scale)),
+                               interpolation=cv2.INTER_AREA)
+        run = _pipeline_runner().run_on_frame(frame, anonymize=anonymize)
+        jpeg = run["vis_jpeg"]
+
+    response = HttpResponse(jpeg, content_type="image/jpeg")
+    response["Cache-Control"] = "no-store, max-age=0"
+    return response
+
+
 def live_stream(request, camera_id: int):
     """비동기 추론 라이브 스트림.
 
