@@ -249,8 +249,8 @@ def live_stream(request, camera_id: int):
        URL 파라미터 (모두 선택):
          fps=2          송출 FPS (기본 2, 포트폴리오 시연용 저부하)
          infer_size=224 추론 입력 폭(px). 작을수록 빠름. (기본 224)
-         infer_interval=0.5  백그라운드 추론 최소 간격(초). 기본 0.5
-         ttl=1.2        박스 캐시 유효 시간(초). 지나면 박스 사라짐. (기본 1.2)
+         infer_interval=2.0  백그라운드 추론 최소 간격(초). 기본 2.0
+         ttl=3.0        박스 캐시 유효 시간(초). 지나면 박스 사라짐. (기본 3.0)
          anonymize=0|1  얼굴 비식별 (기본 1)
     """
     cam = get_object_or_404(Camera, pk=camera_id)
@@ -258,8 +258,8 @@ def live_stream(request, camera_id: int):
     src = int(source) if source.isdigit() else source
     target_fps = max(1, min(30, int(request.GET.get("fps", 2))))
     infer_size = max(160, min(1280, int(request.GET.get("infer_size", 224))))
-    infer_interval = max(0.1, min(5.0, float(request.GET.get("infer_interval", 0.5))))
-    ttl = float(request.GET.get("ttl", 1.2))
+    infer_interval = max(0.1, min(10.0, float(request.GET.get("infer_interval", 2.0))))
+    ttl = float(request.GET.get("ttl", 3.0))
     anonymize = request.GET.get("anonymize", "1") != "0"
     # frame_skip: 1 이면 모든 프레임 사용, 3 이면 3프레임 중 1개만 = 영상 3배속
     frame_skip = max(1, int(request.GET.get("skip", 3)))
