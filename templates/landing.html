@@ -12,22 +12,22 @@
     하나의 워크스페이스에서.
   </h1>
   <p class="text-slate-600 text-base sm:text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
-    3개 수상 작품을 단일 Django 프로젝트로 통합. 각 시스템의 <b>기술 노트</b>에서 문제 정의 · 데이터 분석 · 정량 결과를 확인하실 수 있습니다.
+    3개 수상 작품의 <b class="text-brand-700">정량 분석 보고서</b> — 문제 정의 · 데이터 분석 · 진단 사이클 · 실측 결과까지.
+    공개 데이터셋(ICBHI · Kermany · Roboflow) 기준 재현 가능한 측정값.
   </p>
-  <div class="flex justify-center gap-3 flex-wrap">
-    <a href="{% url 'studies:new' %}"
-       class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium shadow-soft">
-      X-ray 데모 실행 →
+  <div class="flex justify-center gap-3 flex-wrap items-center">
+    <a href="#systems"
+       class="inline-flex items-center gap-1.5 px-6 py-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-sm font-semibold shadow-soft transition">
+      분석 보고서 둘러보기 ↓
     </a>
     <a href="{% url 'diagnosis:upload' %}"
-       class="inline-flex items-center gap-1.5 px-5 py-2.5 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium">
-      심폐음 데모
-    </a>
-    <a href="{% url 'safety:upload' %}"
-       class="inline-flex items-center gap-1.5 px-5 py-2.5 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium">
-      현장 안전 데모
+       class="inline-flex items-center gap-1.5 px-5 py-3 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 hover:border-brand-300 rounded-xl text-sm font-medium transition">
+      바로 데모 체험 →
     </a>
   </div>
+  <p class="text-[11px] text-slate-400 mt-4">
+    심폐음·현장 안전 데모는 로그인 없이 바로 사용 가능
+  </p>
 </section>
 
 <!-- 수상 카드 (랜딩의 핵심) -->
@@ -64,8 +64,14 @@
         </div>
       </div>
       <a href="{% url 'diagnosis:about' %}"
-         class="inline-flex items-center gap-1 mt-4 text-sm font-medium text-brand-600 hover:text-brand-700">
-        📊 기술 노트 보기 →
+         class="group/cta mt-5 flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white px-4 py-3 rounded-xl text-sm font-semibold shadow-soft transition w-full">
+        <span>📊</span>
+        <span>기술 노트 읽기</span>
+        <span class="group-hover/cta:translate-x-1 transition-transform">→</span>
+      </a>
+      <a href="{% url 'diagnosis:upload' %}"
+         class="mt-2 flex items-center justify-center gap-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 hover:border-brand-300 px-4 py-2 rounded-lg text-xs font-medium transition w-full">
+        <span>▶ 데모 시연</span>
       </a>
     </div>
   </article>
@@ -83,26 +89,33 @@
     <div class="p-6">
       <h2 class="font-semibold text-slate-900 mb-1">공사현장 안전관리</h2>
       <p class="text-sm text-slate-600 leading-relaxed">
-        YOLO + Zero-DCE++ + Real-ESRGAN 조건부 적용 파이프라인.
-        야간 sample 에서 <b class="text-emerald-700">conf +15%</b>, 저해상도 <b class="text-emerald-700">탐지 +40%</b>.
+        YOLO + Zero-DCE++ 조건부 파이프라인.
+        실측 Baseline <b class="text-emerald-700">AP 0.6381</b>,
+        매우 어두운 환경(합성)에서 Zero-DCE 적용 시 <b class="text-emerald-700">AP +0.0754</b> 회복.
       </p>
       <div class="grid grid-cols-3 gap-2 mt-3 text-xs">
         <div class="bg-slate-50 rounded p-2 text-center">
-          <div class="font-bold text-emerald-700">+15%</div>
-          <div class="text-slate-500">야간 conf</div>
+          <div class="font-bold text-emerald-700">0.6381</div>
+          <div class="text-slate-500">AP · 실측</div>
         </div>
         <div class="bg-slate-50 rounded p-2 text-center">
-          <div class="font-bold text-brand-700">+40%</div>
-          <div class="text-slate-500">SR 탐지</div>
+          <div class="font-bold text-brand-700">+0.0754</div>
+          <div class="text-slate-500">야간 ΔAP</div>
         </div>
         <div class="bg-slate-50 rounded p-2 text-center">
-          <div class="font-bold text-slate-700">~10ms</div>
-          <div class="text-slate-500">YOLO</div>
+          <div class="font-bold text-slate-700">16ms</div>
+          <div class="text-slate-500">CPU latency</div>
         </div>
       </div>
       <a href="{% url 'safety:about' %}"
-         class="inline-flex items-center gap-1 mt-4 text-sm font-medium text-brand-600 hover:text-brand-700">
-        📊 기술 노트 보기 →
+         class="group/cta mt-5 flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white px-4 py-3 rounded-xl text-sm font-semibold shadow-soft transition w-full">
+        <span>📊</span>
+        <span>기술 노트 읽기</span>
+        <span class="group-hover/cta:translate-x-1 transition-transform">→</span>
+      </a>
+      <a href="{% url 'safety:upload' %}"
+         class="mt-2 flex items-center justify-center gap-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 hover:border-brand-300 px-4 py-2 rounded-lg text-xs font-medium transition w-full">
+        <span>▶ 데모 시연</span>
       </a>
     </div>
   </article>
@@ -138,8 +151,14 @@
         </div>
       </div>
       <a href="{% url 'studies:about' %}"
-         class="inline-flex items-center gap-1 mt-4 text-sm font-medium text-brand-600 hover:text-brand-700">
-        📊 기술 노트 보기 →
+         class="group/cta mt-5 flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white px-4 py-3 rounded-xl text-sm font-semibold shadow-soft transition w-full">
+        <span>📊</span>
+        <span>기술 노트 읽기</span>
+        <span class="group-hover/cta:translate-x-1 transition-transform">→</span>
+      </a>
+      <a href="{% url 'studies:new' %}"
+         class="mt-2 flex items-center justify-center gap-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 hover:border-brand-300 px-4 py-2 rounded-lg text-xs font-medium transition w-full">
+        <span>▶ 데모 시연</span>
       </a>
     </div>
   </article>

@@ -1,0 +1,742 @@
+{
+  "thresholds": {
+    "brightness": 70.0,
+    "contrast": 35.0,
+    "noise": 0.02
+  },
+  "n_total": 88,
+  "n_triggered": 13,
+  "records": [
+    {
+      "img_id": "001009_jpg.rf.1a39d945293334d11a9c7daf62d4d2b7",
+      "brightness": 143.07408582089553,
+      "contrast": 57.528230571245395,
+      "noise": 0.05859706550836563,
+      "triggered": true,
+      "violates": [
+        "N>0.02"
+      ]
+    },
+    {
+      "img_id": "000724_jpg.rf.59bc8ee063a93d1d5baad2734e1651e0",
+      "brightness": 192.16031897926635,
+      "contrast": 63.879969064916686,
+      "noise": 0.0328887440264225,
+      "triggered": true,
+      "violates": [
+        "N>0.02"
+      ]
+    },
+    {
+      "img_id": "000970_jpg.rf.5537caaa27fe6c53a2c64c2b0007ba2b",
+      "brightness": 162.04151845637583,
+      "contrast": 71.25712166214467,
+      "noise": 0.03210899233818054,
+      "triggered": true,
+      "violates": [
+        "N>0.02"
+      ]
+    },
+    {
+      "img_id": "000698_jpg.rf.d473791d73ea77173b66d14aac1032be",
+      "brightness": 143.07800766283526,
+      "contrast": 53.66508078823461,
+      "noise": 0.027541080489754677,
+      "triggered": true,
+      "violates": [
+        "N>0.02"
+      ]
+    },
+    {
+      "img_id": "001016_jpg.rf.30e5dea7acfa6f656151500a43e91064",
+      "brightness": 103.43729595015576,
+      "contrast": 73.22957174350041,
+      "noise": 0.026992693543434143,
+      "triggered": true,
+      "violates": [
+        "N>0.02"
+      ]
+    },
+    {
+      "img_id": "001019_jpg.rf.0456fc75cf036ed1678dded5a3c4bbe7",
+      "brightness": 130.21019733333333,
+      "contrast": 58.109734167048174,
+      "noise": 0.026182295754551888,
+      "triggered": true,
+      "violates": [
+        "N>0.02"
+      ]
+    },
+    {
+      "img_id": "000987_jpg.rf.d33f009adc98794c31d97bca67ae880f",
+      "brightness": 174.4286074074074,
+      "contrast": 77.05635931011786,
+      "noise": 0.02276487462222576,
+      "triggered": true,
+      "violates": [
+        "N>0.02"
+      ]
+    },
+    {
+      "img_id": "000959_jpg.rf.fe3ea96255b2d34482746e559521f751",
+      "brightness": 173.19565,
+      "contrast": 71.34261169492645,
+      "noise": 0.021569371223449707,
+      "triggered": true,
+      "violates": [
+        "N>0.02"
+      ]
+    },
+    {
+      "img_id": "000975_jpg.rf.0465178442304f1b203e4d9275abfa79",
+      "brightness": 210.53256529850745,
+      "contrast": 71.99529901253942,
+      "noise": 0.02023508958518505,
+      "triggered": true,
+      "violates": [
+        "N>0.02"
+      ]
+    },
+    {
+      "img_id": "000836_jpg.rf.a06fc2057f08c8f503429956d3daab38",
+      "brightness": 181.95384431137725,
+      "contrast": 85.26470611227317,
+      "noise": 0.0190773643553257,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000965_jpg.rf.d368da464178dfe81774db9330762cd8",
+      "brightness": 95.7198046875,
+      "contrast": 72.23855313865356,
+      "noise": 0.01816968247294426,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000790_jpg.rf.5c222a29ba22ea5845caf8659f85a3f2",
+      "brightness": 140.62706906906908,
+      "contrast": 67.88203982205972,
+      "noise": 0.017911821603775024,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "001003_jpg.rf.747907dc5aee2ab1ce587a2b014d0070",
+      "brightness": 143.1206443768997,
+      "contrast": 73.8937131048037,
+      "noise": 0.017590779811143875,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000867_jpg.rf.7996a76ecdd6829ca8725954dc1fa65e",
+      "brightness": 132.34185561497327,
+      "contrast": 71.340991619596,
+      "noise": 0.017340892925858498,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000712_jpg.rf.d7ee2789a05d1574f6323f72be3b27b8",
+      "brightness": 150.08154029850746,
+      "contrast": 48.099924283102986,
+      "noise": 0.01669769175350666,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "001002_jpg.rf.f124c7dd91a2f6669732ecae134baa1d",
+      "brightness": 213.91101503759398,
+      "contrast": 44.97552284342957,
+      "noise": 0.016265852376818657,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000767_jpg.rf.366f997b58c5250761f2ee676000694b",
+      "brightness": 113.11324357034796,
+      "contrast": 71.30811039312931,
+      "noise": 0.01395807322114706,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000657_jpg.rf.c91f098857191dcdbc2594d2b265d4b2",
+      "brightness": 118.54941253653008,
+      "contrast": 56.84594068327989,
+      "noise": 0.013715167529881,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000622_jpg.rf.9ae88d2b3e8424db1a59eba46df226c5",
+      "brightness": 115.51182582582582,
+      "contrast": 73.40234255121948,
+      "noise": 0.013570491224527359,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "001000_jpg.rf.cc73d28d7b3172d117ce490452d654c1",
+      "brightness": 170.68978518518517,
+      "contrast": 82.56530294361832,
+      "noise": 0.01198098249733448,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000070_jpg.rf.73552b9bc25f3049811c189c7513642c",
+      "brightness": 99.07802962962963,
+      "contrast": 56.61419661528387,
+      "noise": 0.011572453193366528,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000071_jpg.rf.bfd41c7aca6a07333ad3dab7d547cb5b",
+      "brightness": 184.834257518797,
+      "contrast": 61.00221037091546,
+      "noise": 0.011359281837940216,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000993_jpg.rf.4a5093f7416e46e4d3bbd2a78906d0e6",
+      "brightness": 146.15296052631578,
+      "contrast": 70.3987853366023,
+      "noise": 0.011299367062747478,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000992_jpg.rf.e9b4baa418526ce6fe6b8bd977c5980b",
+      "brightness": 158.3209638554217,
+      "contrast": 62.38990031207578,
+      "noise": 0.010620956309139729,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000952_jpg.rf.c9c690a841600ee70e111f088f448ba8",
+      "brightness": 205.2379955105406,
+      "contrast": 70.18109313251644,
+      "noise": 0.010418020188808441,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000796_jpg.rf.7646f6e03a92c8f495de203de06e767e",
+      "brightness": 121.01447129909366,
+      "contrast": 57.49477477546994,
+      "noise": 0.010177727788686752,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000778_jpg.rf.7423cf446bc0e53b42fa11a42587deef",
+      "brightness": 139.39501796407185,
+      "contrast": 81.86741355986389,
+      "noise": 0.00969934556633234,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000950_jpg.rf.25cfb213fea5277268b1731c0f9dbbfa",
+      "brightness": 150.3907386623436,
+      "contrast": 56.05794614484549,
+      "noise": 0.009492839686572552,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000983_jpg.rf.e43087e887343a3731730fb2f52da387",
+      "brightness": 185.24385585585586,
+      "contrast": 43.12625247846067,
+      "noise": 0.00941639207303524,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "001014_jpg.rf.cc5a548dc64e4eb67f052fb52436db0c",
+      "brightness": 150.81116516516516,
+      "contrast": 59.76031554533256,
+      "noise": 0.009415979497134686,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000096_jpg.rf.a348b21f051f110cff64f1740be6a516",
+      "brightness": 113.80341142857142,
+      "contrast": 69.14180936351892,
+      "noise": 0.009401085786521435,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "001013_jpg.rf.5ff121029873e2af571ee2d8d9e2526f",
+      "brightness": 84.12571428571428,
+      "contrast": 77.46065212386142,
+      "noise": 0.008946551010012627,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000964_jpg.rf.8c2b48db8d9e4934df19f76cfea3b657",
+      "brightness": 146.94359878224643,
+      "contrast": 70.30615536819218,
+      "noise": 0.008916705846786499,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "001018_jpg.rf.7b7202eb2d34274bc982767bbcdc0719",
+      "brightness": 167.91393975903614,
+      "contrast": 91.68856908522078,
+      "noise": 0.008882557973265648,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000670_jpg.rf.97b9a535af224ea15aac5c6236457ec9",
+      "brightness": 174.04924266666666,
+      "contrast": 93.98726830552087,
+      "noise": 0.008449374698102474,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000092_jpg.rf.7da110f6f32135dbc93a7477ee7b7c13",
+      "brightness": 100.03635,
+      "contrast": 60.1691810120615,
+      "noise": 0.008243299089372158,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000955_jpg.rf.44be7383098e266294007b02fe938f7c",
+      "brightness": 97.48734238941135,
+      "contrast": 53.926925850630866,
+      "noise": 0.007930691353976727,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000980_jpg.rf.3d75b3a021fbd30a819d1a005c6c4c1f",
+      "brightness": 156.64475075075075,
+      "contrast": 60.983362744316594,
+      "noise": 0.007842392660677433,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000629_jpg.rf.5d4a236e674ff6c7fb847ff04835aea0",
+      "brightness": 123.7539481865285,
+      "contrast": 60.42498908366749,
+      "noise": 0.007796673569828272,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000577_jpg.rf.4effad2481b4a9b44a1124559744f7c9",
+      "brightness": 186.0190650887574,
+      "contrast": 66.11499990451226,
+      "noise": 0.0075509678572416306,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000968_jpg.rf.81683aa5cfe254cf94d298ecdc8f63af",
+      "brightness": 159.77273333333332,
+      "contrast": 56.01844297259675,
+      "noise": 0.007421074900776148,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "001017_jpg.rf.09398abbb7b059a067d4edce7f992a89",
+      "brightness": 124.105568,
+      "contrast": 52.889780780730895,
+      "noise": 0.0073659056797623634,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000685_jpg.rf.bcc698a69c9b6e489f71924529f3131d",
+      "brightness": 183.43646846846846,
+      "contrast": 51.329589147147395,
+      "noise": 0.007096077781170607,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "001004_jpg.rf.5af134a20911e2487902f77bd4f903de",
+      "brightness": 176.15511351351353,
+      "contrast": 80.21001087029528,
+      "noise": 0.007051758002489805,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000973_jpg.rf.ba73ced674e67d8c9a8620a75699940e",
+      "brightness": 152.97588110964332,
+      "contrast": 55.94122998685979,
+      "noise": 0.007048625033348799,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000966_jpg.rf.67a73d5569aaaf5c3c099a545d84e5b1",
+      "brightness": 133.4930429447853,
+      "contrast": 45.1320158715524,
+      "noise": 0.00692274933680892,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000984_jpg.rf.94b8241b9d91aa578887bddfad3c29d7",
+      "brightness": 115.87425925925926,
+      "contrast": 50.77853721721358,
+      "noise": 0.006777350325137377,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000094_jpg.rf.b082bc002266cb27ecdb8be1ad9020fe",
+      "brightness": 115.01403095975232,
+      "contrast": 50.44641834549428,
+      "noise": 0.006452066358178854,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000081_jpg.rf.635dd1aada36aa9b7f45205e1e1378a3",
+      "brightness": 92.80097005208333,
+      "contrast": 56.99424142092891,
+      "noise": 0.006415689829736948,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000824_jpg.rf.5ad0f47fc59f97edff3b9561dff401db",
+      "brightness": 163.08940139211137,
+      "contrast": 52.33779464001316,
+      "noise": 0.006414591800421476,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000886_jpg.rf.bfcbe5d361a0cc11b45af0611e306ffa",
+      "brightness": 107.5510990990991,
+      "contrast": 54.70312785179421,
+      "noise": 0.006244990509003401,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000607_jpg.rf.5a4e9a568201924ee0a9e4f0bb015274",
+      "brightness": 156.30761565836298,
+      "contrast": 78.94261950402917,
+      "noise": 0.00620298832654953,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "001008_jpg.rf.015a57002db5f025e5afdc34928b0828",
+      "brightness": 128.52898518518518,
+      "contrast": 67.8835443176222,
+      "noise": 0.0058755287900567055,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000898_jpg.rf.414ae228aba9a291b783caf11730e046",
+      "brightness": 121.36190390390391,
+      "contrast": 58.666038653406886,
+      "noise": 0.005792651791125536,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000988_jpg.rf.85e3a49f7f57da3706703a71b6c7d635",
+      "brightness": 191.79484269662922,
+      "contrast": 69.20378626481289,
+      "noise": 0.005722625181078911,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000885_jpg.rf.1f0b8df83185be01ef68e223ca888245",
+      "brightness": 145.67385066666668,
+      "contrast": 59.901456605051806,
+      "noise": 0.0056814346462488174,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000684_jpg.rf.77cf9c4f33f7a00d0d361896bd890c05",
+      "brightness": 118.765025,
+      "contrast": 68.65663935331818,
+      "noise": 0.005622252356261015,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000059_jpg.rf.4bb62f672f04740575cbeb8920606b3d",
+      "brightness": 141.96542942942943,
+      "contrast": 76.57573103168205,
+      "noise": 0.005544889718294144,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000675_jpg.rf.1ed8412b410161fc2c42ff949719ec6e",
+      "brightness": 149.1543243885576,
+      "contrast": 52.35623925945966,
+      "noise": 0.005505228415131569,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000076_jpg.rf.ba46cc706d3c36bf40b5d41930c02040",
+      "brightness": 169.62676404494383,
+      "contrast": 79.09312158922965,
+      "noise": 0.0055039930157363415,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000728_jpg.rf.4a399bf5fd718a0c9ddf4bd15fef73ff",
+      "brightness": 91.11907507507507,
+      "contrast": 60.9197890924372,
+      "noise": 0.005448217503726482,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000706_jpg.rf.eddc95fdfed50fd655b23efb4310b598",
+      "brightness": 58.657171122994654,
+      "contrast": 22.145443058419726,
+      "noise": 0.005381893832236528,
+      "triggered": true,
+      "violates": [
+        "B<70",
+        "C<35"
+      ]
+    },
+    {
+      "img_id": "000715_jpg.rf.4b5c41d877ccea7dd99efc886272c356",
+      "brightness": 146.18622971285893,
+      "contrast": 53.69986974715909,
+      "noise": 0.005213640630245209,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "001010_jpg.rf.0a2db581f12bd5cf143a9d437bb9c8f6",
+      "brightness": 139.94768263473054,
+      "contrast": 57.7549153897435,
+      "noise": 0.005178284831345081,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000991_jpg.rf.a174bc07d1c1a44006961bac5ecf96c2",
+      "brightness": 170.06978378378378,
+      "contrast": 70.03084362517285,
+      "noise": 0.005158053245395422,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000982_jpg.rf.4e7bec67367877af2932371941c0995a",
+      "brightness": 102.08156756756756,
+      "contrast": 65.60279682548679,
+      "noise": 0.004902472719550133,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000736_jpg.rf.f9b3ef4f6c3a0a984256bd6308d52273",
+      "brightness": 79.44434234234234,
+      "contrast": 52.524474336536855,
+      "noise": 0.004711613990366459,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000985_jpg.rf.0d55f5e56e8caf6f29d70c8b57ff53f1",
+      "brightness": 120.92199626865671,
+      "contrast": 86.84242378718501,
+      "noise": 0.004683425184339285,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000989_jpg.rf.67adcf3977c3ee55d1e8e8ae5eba5e0e",
+      "brightness": 114.37574174174175,
+      "contrast": 56.911323922012976,
+      "noise": 0.004627312067896128,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000077_jpg.rf.97e73ca8aece18c181f4456d6b4728cd",
+      "brightness": 138.70466666666667,
+      "contrast": 68.88727994151867,
+      "noise": 0.004608471877872944,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000868_jpg.rf.b5546e72dbe302e6e64a3d8359f550bb",
+      "brightness": 140.22382582582583,
+      "contrast": 83.55434235329402,
+      "noise": 0.004601265769451857,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000859_jpg.rf.c93600be4315c8c34df3bc4196c2e6bd",
+      "brightness": 206.15245185185185,
+      "contrast": 48.786444654336556,
+      "noise": 0.004572579637169838,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000855_jpg.rf.33b5748704d2f88061f1ba79d0665183",
+      "brightness": 123.775872,
+      "contrast": 67.135444270882,
+      "noise": 0.004540442489087582,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000986_jpg.rf.23017c326548c935178841bf9c5703c2",
+      "brightness": 125.71124,
+      "contrast": 51.204448896763104,
+      "noise": 0.004494509194046259,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000967_jpg.rf.3bb034cae6f48599116502441df08abd",
+      "brightness": 138.18148266666665,
+      "contrast": 55.208922671052946,
+      "noise": 0.004232719540596008,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000990_jpg.rf.3a2919c6a920f7866a7c42231ec27ea8",
+      "brightness": 144.54535735735735,
+      "contrast": 67.94952670829414,
+      "noise": 0.0039223977364599705,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "001007_jpg.rf.c0d010137ca8b3ece05577dd2a3e9778",
+      "brightness": 66.357104,
+      "contrast": 35.467211670703385,
+      "noise": 0.0037056603468954563,
+      "triggered": true,
+      "violates": [
+        "B<70"
+      ]
+    },
+    {
+      "img_id": "001015_jpg.rf.2cea6e46254c489d77048f40bc854bcd",
+      "brightness": 68.82051506849315,
+      "contrast": 55.397484148238334,
+      "noise": 0.003628714010119438,
+      "triggered": true,
+      "violates": [
+        "B<70"
+      ]
+    },
+    {
+      "img_id": "company_mp4-0000_jpg.rf.15e237a3cc7bbb5f12ff033830a35807",
+      "brightness": 101.16985243055555,
+      "contrast": 67.34552376103701,
+      "noise": 0.0032487870194017887,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000960_jpg.rf.5e64aee59802cf01b5cbc0bc4ae9dadf",
+      "brightness": 149.01902521008404,
+      "contrast": 67.90117125409965,
+      "noise": 0.0032435557805001736,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "001012_jpg.rf.297d6621259e20eabec29b168e0ba26f",
+      "brightness": 204.92920958083832,
+      "contrast": 75.86468793686113,
+      "noise": 0.0031869548838585615,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000943_jpg.rf.c47f3f9e13be9925f094436b4977b3b0",
+      "brightness": 164.09493093093093,
+      "contrast": 63.02301397096345,
+      "noise": 0.002691571367904544,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000794_jpg.rf.40014cbfc61ad011758ad1fdadf9ad11",
+      "brightness": 68.3512600536193,
+      "contrast": 80.24070838888179,
+      "noise": 0.0026906703133136034,
+      "triggered": true,
+      "violates": [
+        "B<70"
+      ]
+    },
+    {
+      "img_id": "000060_jpg.rf.b1a8b2b1f45361375c81bf459a07f0ca",
+      "brightness": 143.81096317488263,
+      "contrast": 50.004559526654,
+      "noise": 0.0020352844148874283,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000695_jpg.rf.b8eebc4dd83e01fe68a88d81c8dd74ad",
+      "brightness": 144.47785585585586,
+      "contrast": 68.28865577631349,
+      "noise": 0.0020098513923585415,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "000972_jpg.rf.49e6a4f94f6a24d6fc573cfa04df194f",
+      "brightness": 149.57346754966886,
+      "contrast": 100.79464223901599,
+      "noise": 0.0020059808157384396,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "1_mp4-0005_jpg.rf.db8043a0082982a60f50157e1bec1886",
+      "brightness": 121.84106119791667,
+      "contrast": 49.08465384366553,
+      "noise": 0.0018560860771685839,
+      "triggered": false,
+      "violates": []
+    },
+    {
+      "img_id": "front_mp4-0010_jpg.rf.8eb0719d6fa86bdcec50d95fb047d6be",
+      "brightness": 139.8236664496528,
+      "contrast": 43.29569731431259,
+      "noise": 0.0007910191197879612,
+      "triggered": false,
+      "violates": []
+    }
+  ]
+}

@@ -152,4 +152,19 @@ HEART_LUNG_ROOT = Path(
 SR_CKPT = os.environ.get("SR_CKPT", str(HEART_LUNG_ROOT / "checkpoints" / "sr" / "best.pt"))
 CLS_CKPT = os.environ.get("CLS_CKPT", str(HEART_LUNG_ROOT / "checkpoints" / "cls" / "best_sr.pt"))
 INFERENCE_DEVICE = os.environ.get("INFERENCE_DEVICE", "auto")  # auto/cpu/cuda
+
+
+# ───────── 현장 안전 (safety 앱) ─────────
+#
+# 분석으로 튜닝된 Zero-DCE 게이트 임계값 — 원본 (수상관리/config.py) 값은
+# 분석 결과 결함이 있어 (특히 noise 게이트가 밝은 sample 에 잘못 트리거됨)
+# Django 부팅 시 아래 값으로 override 한다. scripts/eval_safety.py 와 정합.
+#
+# 원본:  brightness < 70 OR contrast < 35 OR noise > 0.02
+# 튜닝:  brightness < 60 OR contrast < 30   (noise 게이트 비활성)
+#
+# raw 분석 근거: scripts/inspect_safety_triggers.py, scripts/eval_safety.py
+SAFETY_GATE_BRIGHTNESS = float(os.environ.get("SAFETY_GATE_BRIGHTNESS", "60.0"))
+SAFETY_GATE_CONTRAST   = float(os.environ.get("SAFETY_GATE_CONTRAST",   "30.0"))
+SAFETY_GATE_NOISE      = float(os.environ.get("SAFETY_GATE_NOISE",      "999.0"))
 INFERENCE_SEGMENT_SEC = float(os.environ.get("INFERENCE_SEGMENT_SEC", "6.0"))

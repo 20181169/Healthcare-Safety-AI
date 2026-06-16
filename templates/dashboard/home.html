@@ -2,31 +2,92 @@
 {% block title %}대시보드 · 통합 헬스케어·안전 AI{% endblock %}
 {% block content %}
 
-<!-- 환영 헤더 (간결) -->
-<div class="mb-6">
-  <div class="flex items-end justify-between flex-wrap gap-3">
-    <div>
-      <div class="text-xs text-slate-500 mb-1">{{ user.role_kor }}{% if user.affiliation %} · {{ user.affiliation }}{% endif %}</div>
-      <h1 class="text-2xl font-bold text-slate-900">
-        안녕하세요, {{ user.name }}<span class="text-slate-400 font-normal">님</span>
+<!-- ───────── 1. Hero — 3 수상 배지 prominent ───────── -->
+<section class="bg-gradient-to-br from-amber-50 via-white to-brand-50 border border-amber-200 rounded-2xl p-7 mb-5 shadow-soft">
+  <div class="flex items-start justify-between gap-4 flex-wrap">
+    <div class="flex-1 min-w-[280px]">
+      <div class="text-xs text-slate-500 mb-1.5">{{ user.name }}<span class="text-slate-400">님 · {{ user.role_kor }}</span></div>
+      <h1 class="text-3xl font-bold text-slate-900 mb-2 leading-tight">
+        수상 작품 <span class="text-brand-700">정량 분석 보고서</span>
       </h1>
-      <p class="text-sm text-slate-500 mt-1">3개 수상 작품을 통합한 워크스페이스 — 각 시스템의 기술 노트와 라이브 데모.</p>
+      <p class="text-sm text-slate-600 leading-relaxed">
+        3개 AI 작품의 <b>실측 데이터·진단 사이클·정직한 한계</b>를 한 곳에 정리.
+        각 보고서는 ICBHI·Kermany·Roboflow 공개 데이터셋 기준 재현 가능한 측정값으로 구성됩니다.
+      </p>
     </div>
-    <div class="flex gap-2 text-xs">
-      <a href="{% url 'patients:list' %}" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600">환자</a>
-      <a href="{% url 'studies:list' %}" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600">검사</a>
-      <a href="{% url 'diagnosis:history' %}" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600">진단 이력</a>
-      <a href="{% url 'safety:history' %}" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600">탐지 이력</a>
+    <div class="flex gap-2 flex-wrap">
+      <div class="bg-white rounded-xl shadow-soft border border-amber-200 px-3 py-2 flex items-center gap-2">
+        <span class="text-xl">🏆</span>
+        <div>
+          <div class="text-[10px] font-bold text-amber-900">최우수상</div>
+          <div class="text-[10px] text-slate-500">Heart &amp; Lung 2023</div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-soft border border-amber-200 px-3 py-2 flex items-center gap-2">
+        <span class="text-xl">🏆</span>
+        <div>
+          <div class="text-[10px] font-bold text-amber-900">우수상</div>
+          <div class="text-[10px] text-slate-500">NIA AI 데이터 2023</div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-soft border border-amber-200 px-3 py-2 flex items-center gap-2">
+        <span class="text-xl">🏆</span>
+        <div>
+          <div class="text-[10px] font-bold text-amber-900">우수상</div>
+          <div class="text-[10px] text-slate-500">소아 X-ray 2022</div>
+        </div>
+      </div>
     </div>
   </div>
-</div>
+</section>
 
-<!-- 3개 수상 작품 카드 (대형) -->
-<div class="grid lg:grid-cols-3 gap-5">
+<!-- ───────── 2. Key Results Bar — 3 시스템 핵심 실측값 한 줄 ───────── -->
+<section class="grid md:grid-cols-3 gap-3 mb-5">
+  <a href="{% url 'studies:about' %}"
+     class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft hover:shadow-md hover:border-brand-300 transition group">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-medium text-slate-500">🩻 소아 X-ray · Kermany test 624장</span>
+      <span class="text-xs text-emerald-600 font-medium group-hover:translate-x-0.5 transition-transform">실측 →</span>
+    </div>
+    <div class="flex items-baseline gap-2">
+      <span class="text-3xl font-bold text-emerald-700 font-mono">0.9818</span>
+      <span class="text-sm text-slate-500">AUROC</span>
+    </div>
+    <div class="text-xs text-slate-500 mt-1">Sensitivity 0.9949 · FN 단 2건</div>
+  </a>
 
-  <!-- 1. 심폐음 (최우수상) -->
+  <a href="{% url 'diagnosis:about' %}"
+     class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft hover:shadow-md hover:border-brand-300 transition group">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-medium text-slate-500">🫁 심폐음 · ICBHI val 1,343 cycle</span>
+      <span class="text-xs text-emerald-600 font-medium group-hover:translate-x-0.5 transition-transform">실측 →</span>
+    </div>
+    <div class="flex items-baseline gap-2">
+      <span class="text-3xl font-bold text-emerald-700 font-mono">+0.351</span>
+      <span class="text-sm text-slate-500">Crackle Recall Δ</span>
+    </div>
+    <div class="text-xs text-slate-500 mt-1">SR-boost 2.4× · 폐렴 의심 burst 탐지</div>
+  </a>
+
+  <a href="{% url 'safety:about' %}"
+     class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft hover:shadow-md hover:border-brand-300 transition group">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-medium text-slate-500">🦺 현장 안전 · Roboflow 88장 + 합성 darkening</span>
+      <span class="text-xs text-emerald-600 font-medium group-hover:translate-x-0.5 transition-transform">실측 →</span>
+    </div>
+    <div class="flex items-baseline gap-2">
+      <span class="text-3xl font-bold text-emerald-700 font-mono">+0.0754</span>
+      <span class="text-sm text-slate-500">매우 어두울 시 ΔAP</span>
+    </div>
+    <div class="text-xs text-slate-500 mt-1">gamma 4.0 · noise 게이트 결함 진단</div>
+  </a>
+</section>
+
+<!-- ───────── 3. 3 시스템 분석 보고서 카드 (메인) ───────── -->
+<section class="grid lg:grid-cols-3 gap-5 mb-5">
+
+  <!-- (1) 심폐음 -->
   <article class="bg-white border border-slate-200 rounded-2xl shadow-soft hover:shadow-md transition overflow-hidden flex flex-col">
-    <!-- 헤더 -->
     <div class="bg-gradient-to-br from-amber-50 via-amber-50/70 to-brand-50 px-6 pt-5 pb-5 border-b border-slate-100">
       <div class="flex items-start justify-between mb-3">
         <div>
@@ -36,53 +97,41 @@
         <div class="w-12 h-12 rounded-xl bg-white shadow-soft grid place-items-center text-2xl">🫁</div>
       </div>
       <h2 class="font-bold text-lg text-slate-900">심폐음 SR + 진단</h2>
-      <p class="text-xs text-slate-600 mt-1">Audio Super-Resolution 으로 가정용 청진음을 청진실 수준으로 복원</p>
+      <p class="text-xs text-slate-600 mt-1">가정용 청진기 LR 신호 → Audio SR 16kHz 복원 → 4-class 분류</p>
     </div>
 
-    <!-- 본문 -->
     <div class="p-6 flex-1 flex flex-col">
-      <div class="text-xs text-slate-500 mb-2">핵심 정량 결과</div>
-      <div class="grid grid-cols-3 gap-2 mb-4">
-        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
-          <div class="text-lg font-bold text-emerald-700">+0.351</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">Crackle Recall Δ</div>
-          <div class="text-[10px] text-emerald-600 font-medium">실측 · 2.4×</div>
-        </div>
-        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
-          <div class="text-lg font-bold text-brand-700">+0.178</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">Sensitivity Δ</div>
-          <div class="text-[10px] text-brand-600 font-medium">실측 · n=1343</div>
-        </div>
-        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
-          <div class="text-lg font-bold text-slate-700">0.4485</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">Macro F1</div>
-          <div class="text-[10px] text-slate-400">SR-boost · 실측</div>
+      <!-- 진짜 발견 -->
+      <div class="bg-brand-50/60 border border-brand-200 rounded-lg p-3 mb-4">
+        <div class="text-[10px] text-brand-700 font-medium mb-1">진짜 발견 — Macro F1 +0.0017 (무의미)</div>
+        <div class="text-sm font-semibold text-brand-800 leading-snug">
+          그러나 Crackle Recall <span class="font-mono">0.255 → 0.606</span><br>
+          <span class="text-xs font-normal text-brand-700">(+35%p · 2.4배 · 폐렴 의심 burst 탐지)</span>
         </div>
       </div>
 
       <div class="text-xs text-slate-500 mb-2">기술 스택</div>
       <div class="flex flex-wrap gap-1.5 mb-5">
-        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">PyTorch</span>
-        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">1D U-Net</span>
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">1D U-Net SR</span>
         <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">STFT loss</span>
-        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">librosa</span>
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">HeartLungCNN</span>
         <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">ICBHI 2017</span>
       </div>
 
-      <div class="mt-auto grid grid-cols-2 gap-2">
+      <div class="mt-auto space-y-2">
         <a href="{% url 'diagnosis:about' %}"
-           class="inline-flex items-center justify-center gap-1 border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition">
-          📊 기술 노트
+           class="flex items-center justify-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold shadow-soft transition w-full">
+          📊 분석 보고서 읽기 →
         </a>
         <a href="{% url 'diagnosis:upload' %}"
-           class="inline-flex items-center justify-center gap-1 bg-brand-600 hover:bg-brand-700 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-soft transition">
-          ▶ 지금 데모
+           class="block text-center text-xs text-slate-500 hover:text-brand-700 underline transition">
+          ▶ 데모 시연 (WAV 업로드)
         </a>
       </div>
     </div>
   </article>
 
-  <!-- 2. 현장 안전 (우수상) -->
+  <!-- (2) 현장 안전 -->
   <article class="bg-white border border-slate-200 rounded-2xl shadow-soft hover:shadow-md transition overflow-hidden flex flex-col">
     <div class="bg-gradient-to-br from-amber-50 via-amber-50/70 to-brand-50 px-6 pt-5 pb-5 border-b border-slate-100">
       <div class="flex items-start justify-between mb-3">
@@ -93,26 +142,16 @@
         <div class="w-12 h-12 rounded-xl bg-white shadow-soft grid place-items-center text-2xl">🦺</div>
       </div>
       <h2 class="font-bold text-lg text-slate-900">공사현장 안전관리</h2>
-      <p class="text-xs text-slate-600 mt-1">저조도·저해상도에서도 안정적인 안전모 탐지 — 조건부 적용 파이프라인</p>
+      <p class="text-xs text-slate-600 mt-1">YOLO + Zero-DCE++ 조건부 파이프라인 — 게이트 결함 진단/튜닝</p>
     </div>
 
     <div class="p-6 flex-1 flex flex-col">
-      <div class="text-xs text-slate-500 mb-2">핵심 정량 결과</div>
-      <div class="grid grid-cols-3 gap-2 mb-4">
-        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
-          <div class="text-lg font-bold text-emerald-700">+15%</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">야간 conf</div>
-          <div class="text-[10px] text-emerald-600 font-medium">Zero-DCE++</div>
-        </div>
-        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
-          <div class="text-lg font-bold text-brand-700">+40%</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">SR 탐지</div>
-          <div class="text-[10px] text-brand-600 font-medium">Real-ESRGAN</div>
-        </div>
-        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
-          <div class="text-lg font-bold text-slate-700">~10</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">YOLO (ms)</div>
-          <div class="text-[10px] text-slate-400">416 입력</div>
+      <!-- 진짜 발견 -->
+      <div class="bg-brand-50/60 border border-brand-200 rounded-lg p-3 mb-4">
+        <div class="text-[10px] text-brand-700 font-medium mb-1">진짜 발견 — 데이터 진단 사이클</div>
+        <div class="text-sm font-semibold text-brand-800 leading-snug">
+          noise 게이트 결함 발견 → 합성 darkening 검증<br>
+          <span class="text-xs font-normal text-brand-700">매우 어두울 시 (γ=4) AP <span class="font-mono">+0.0754</span> · 무조건 손실 <span class="font-mono">−0.1223</span></span>
         </div>
       </div>
 
@@ -120,25 +159,24 @@
       <div class="flex flex-wrap gap-1.5 mb-5">
         <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">YOLOv5s</span>
         <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">Zero-DCE++</span>
-        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">Real-ESRGAN</span>
-        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">OpenCV</span>
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">조건부 게이트</span>
         <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">MJPEG stream</span>
       </div>
 
-      <div class="mt-auto grid grid-cols-2 gap-2">
+      <div class="mt-auto space-y-2">
         <a href="{% url 'safety:about' %}"
-           class="inline-flex items-center justify-center gap-1 border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition">
-          📊 기술 노트
+           class="flex items-center justify-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold shadow-soft transition w-full">
+          📊 분석 보고서 읽기 →
         </a>
         <a href="{% url 'safety:upload' %}"
-           class="inline-flex items-center justify-center gap-1 bg-brand-600 hover:bg-brand-700 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-soft transition">
-          ▶ 지금 데모
+           class="block text-center text-xs text-slate-500 hover:text-brand-700 underline transition">
+          ▶ 데모 시연 (이미지 분석)
         </a>
       </div>
     </div>
   </article>
 
-  <!-- 3. 소아 X-ray (우수상) -->
+  <!-- (3) 소아 X-ray -->
   <article class="bg-white border border-slate-200 rounded-2xl shadow-soft hover:shadow-md transition overflow-hidden flex flex-col">
     <div class="bg-gradient-to-br from-amber-50 via-amber-50/70 to-brand-50 px-6 pt-5 pb-5 border-b border-slate-100">
       <div class="flex items-start justify-between mb-3">
@@ -149,66 +187,98 @@
         <div class="w-12 h-12 rounded-xl bg-white shadow-soft grid place-items-center text-2xl">🩻</div>
       </div>
       <h2 class="font-bold text-lg text-slate-900">소아 X-ray 원격 판독</h2>
-      <p class="text-xs text-slate-600 mt-1">응급실 → 영상의학 판독 지연을 AI 1차 분류 + 원격 확정으로 단축</p>
+      <p class="text-xs text-slate-600 mt-1">DenseNet-121 + Grad-CAM + 영상의학 확정 워크플로우</p>
     </div>
 
     <div class="p-6 flex-1 flex flex-col">
-      <div class="text-xs text-slate-500 mb-2">핵심 정량 결과</div>
-      <div class="grid grid-cols-3 gap-2 mb-4">
-        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
-          <div class="text-lg font-bold text-emerald-700">0.9818</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">AUROC</div>
-          <div class="text-[10px] text-emerald-600 font-medium">실측 · n=624</div>
-        </div>
-        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
-          <div class="text-lg font-bold text-emerald-700">0.9949</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">Sensitivity</div>
-          <div class="text-[10px] text-emerald-600 font-medium">FN 2건만</div>
-        </div>
-        <div class="bg-slate-50 rounded-lg p-2.5 text-center border border-slate-100">
-          <div class="text-lg font-bold text-slate-700">59</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">latency (ms)</div>
-          <div class="text-[10px] text-slate-400">CPU 추론</div>
+      <!-- 진짜 발견 -->
+      <div class="bg-brand-50/60 border border-brand-200 rounded-lg p-3 mb-4">
+        <div class="text-[10px] text-brand-700 font-medium mb-1">진짜 발견 — 폐렴 거의 놓치지 않음</div>
+        <div class="text-sm font-semibold text-brand-800 leading-snug">
+          AUROC <span class="font-mono">0.9818</span> · Sensitivity <span class="font-mono">0.9949</span><br>
+          <span class="text-xs font-normal text-brand-700">390건 폐렴 중 388건 잡음 · FN 단 <span class="font-mono">2건</span></span>
         </div>
       </div>
 
       <div class="text-xs text-slate-500 mb-2">기술 스택</div>
       <div class="flex flex-wrap gap-1.5 mb-5">
         <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">DenseNet-121</span>
-        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">Multi-label BCE</span>
         <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">Grad-CAM</span>
-        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">Kermany PD</span>
+        <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">Multi-label BCE</span>
         <span class="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded">RBAC 워크플로우</span>
       </div>
 
-      <div class="mt-auto grid grid-cols-2 gap-2">
+      <div class="mt-auto space-y-2">
         <a href="{% url 'studies:about' %}"
-           class="inline-flex items-center justify-center gap-1 border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition">
-          📊 기술 노트
+           class="flex items-center justify-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold shadow-soft transition w-full">
+          📊 분석 보고서 읽기 →
         </a>
         <a href="{% url 'studies:new' %}"
-           class="inline-flex items-center justify-center gap-1 bg-brand-600 hover:bg-brand-700 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-soft transition">
-          ▶ 지금 데모
+           class="block text-center text-xs text-slate-500 hover:text-brand-700 underline transition">
+          ▶ 데모 시연 (X-ray 업로드)
         </a>
       </div>
     </div>
   </article>
-</div>
+</section>
 
-<!-- 통합 환경 한 줄 가치 -->
-<div class="mt-8 bg-white border border-slate-200 rounded-xl p-4 shadow-soft flex items-center justify-between flex-wrap gap-3">
-  <div class="flex items-center gap-3">
-    <span class="text-2xl">🔗</span>
-    <div>
-      <div class="font-medium text-slate-800 text-sm">하나의 Django 프로젝트로 통합</div>
-      <div class="text-xs text-slate-500">단일 로그인 · 공유 사용자 DB · 일관된 디자인 시스템</div>
+<!-- ───────── 4. 데이터 분석 방법론 한 줄 요약 (NEW) ───────── -->
+<section class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5">
+  <div class="flex items-start gap-3 flex-wrap">
+    <div class="text-xl">🔬</div>
+    <div class="flex-1">
+      <div class="font-medium text-slate-800 text-sm mb-1">측정 방법론 한 줄 요약</div>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        3개 시스템 모두 <b>scripts/eval_*.py</b> 단일 명령 재현 가능 · CPU 추론 · deterministic 전처리 ·
+        sklearn 기반 metric · 결과 JSON 저장.
+        보고된 모든 수치는 <span class="text-emerald-700 font-medium">실측</span> 또는
+        <span class="text-amber-700 font-medium">추정</span> 으로 명확히 구분.
+      </p>
+    </div>
+    <div class="flex gap-2 text-[11px]">
+      <span class="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-600">PyTorch</span>
+      <span class="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-600">scikit-learn</span>
+      <span class="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-600">Django 5.x</span>
     </div>
   </div>
-  <div class="flex gap-4 text-xs text-slate-500">
-    <div><b class="text-brand-700">3</b> 수상 작품</div>
-    <div><b class="text-brand-700">6</b> Django 앱</div>
-    <div><b class="text-brand-700">1</b> SQLite DB</div>
+</section>
+
+<!-- ───────── 5. 운영 단축키 (시연 흐름용) ───────── -->
+<section class="bg-white border border-slate-200 rounded-xl p-4 shadow-soft">
+  <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+    <div>
+      <div class="text-sm font-medium text-slate-700">운영 시연 단축키</div>
+      <div class="text-xs text-slate-500">실제 워크플로우 시연이 필요할 때 사용</div>
+    </div>
+    <a href="/admin/" class="text-xs text-slate-500 hover:text-slate-900">관리자 페이지 →</a>
   </div>
-</div>
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+    <a href="{% url 'patients:list' %}"
+       class="bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 rounded-lg px-3 py-2.5 transition">
+      <div class="text-xs text-slate-500">소아 X-ray</div>
+      <div class="font-medium text-slate-800 mt-0.5">환자 목록</div>
+    </a>
+    <a href="{% url 'studies:list' %}"
+       class="bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 rounded-lg px-3 py-2.5 transition">
+      <div class="text-xs text-slate-500">소아 X-ray</div>
+      <div class="font-medium text-slate-800 mt-0.5">검사 목록</div>
+    </a>
+    <a href="{% url 'diagnosis:history' %}"
+       class="bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 rounded-lg px-3 py-2.5 transition">
+      <div class="text-xs text-slate-500">심폐음</div>
+      <div class="font-medium text-slate-800 mt-0.5">진단 이력</div>
+    </a>
+    <a href="{% url 'safety:dashboard' %}"
+       class="bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 rounded-lg px-3 py-2.5 transition">
+      <div class="text-xs text-slate-500">현장 안전</div>
+      <div class="font-medium text-slate-800 mt-0.5">안전 대시보드</div>
+    </a>
+    <a href="{% url 'safety:live' %}"
+       class="bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 rounded-lg px-3 py-2.5 transition">
+      <div class="text-xs text-slate-500">현장 안전</div>
+      <div class="font-medium text-slate-800 mt-0.5">실시간 스트림</div>
+    </a>
+  </div>
+</section>
 
 {% endblock %}
