@@ -60,11 +60,10 @@ jobs:
             python manage.py collectstatic --noinput
 
             # ── systemd unit 자동 갱신 ───────────────────────────────────────
-            # gunicorn 의 라이브 MJPEG 스트림이 워커를 점유해도 다른 요청이
-            # 막히지 않도록 thread-based concurrency 보장.
-            #   workers=1   : 모델 메모리 1회만 로드 (Lightsail RAM 절약)
-            #   threads=8   : 1 process 안에서 8 동시 요청 처리
-            #   gthread     : 스트리밍 호환 worker class
+            # Lightsail 2GB RAM · 2 vCPU 사양 기준 gunicorn 옵션.
+            #   workers=1   : 모델 메모리 1회만 로드 (RAM 1.2~1.5GB 사용)
+            #   threads=4   : 2 vCPU 에 맞춰 — 1 thread 가 MJPEG 점유해도 다른 요청 처리
+            #   gthread     : MJPEG 스트리밍 호환 worker class
             #   timeout=120 : 첫 추론(모델 로드) 30초+ 걸려도 죽지 않음
             DEPLOY_DIR="$(pwd)"
             DEPLOY_USER="$(whoami)"
@@ -80,7 +79,7 @@ jobs:
             EnvironmentFile=-/etc/healthcare-ai.env
             ExecStart=${DEPLOY_DIR}/.venv/bin/gunicorn healthcare.wsgi:application \\
               --workers 1 \\
-              --threads 8 \\
+              --threads 4 \\
               --worker-class gthread \\
               --timeout 120 \\
               --graceful-timeout 30 \\
