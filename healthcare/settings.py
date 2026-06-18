@@ -168,3 +168,10 @@ SAFETY_GATE_BRIGHTNESS = float(os.environ.get("SAFETY_GATE_BRIGHTNESS", "60.0"))
 SAFETY_GATE_CONTRAST   = float(os.environ.get("SAFETY_GATE_CONTRAST",   "30.0"))
 SAFETY_GATE_NOISE      = float(os.environ.get("SAFETY_GATE_NOISE",      "999.0"))
 INFERENCE_SEGMENT_SEC = float(os.environ.get("INFERENCE_SEGMENT_SEC", "6.0"))
+
+
+# ───────── 방문자 트래킹 (포트폴리오 분석용) ─────────
+# 환경변수가 비어있으면 트래킹 스크립트가 렌더링되지 않음 (로컬 개발 환경 보호).
+# 운영 (Lightsail) 에서만 /etc/healthcare-ai.env 에 값 설정.
+GA_MEASUREMENT_ID  = os.environ.get("GA_MEASUREMENT_ID", "").strip()
+CLARITY_PROJECT_ID = os.environ.get("CLARITY_PROJECT_ID", "").strip()
